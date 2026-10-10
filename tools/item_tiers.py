@@ -1,0 +1,121 @@
+"""Item progression levels from the game's research graph → mods/BaseStock/ItemTiers.cs (the mod's tier sort).
+
+Usage: python tools/item_tiers.py [data dir] [out .cs]      (defaults: data, mods/BaseStock/ItemTiers.cs)
+
+Needs data/gamedata.json + data/raw (build_data.py / extract_game.py). Levels:
+  research level   = 1 + max(levels of required researches, levels of the items it costs)
+  recipe / building = 0 if startUnlocked (or a recipe no research unlocks), else the lowest level of a research
+                      unlocking it
+  item level       = lowest over the recipes producing it of max(recipe, building, its inputs' levels).
+                     Mega furnaces (ContinuousProductionBuilding) are skipped — their blueprints are bought with
+                     credits only, a shortcut, never the first access; Animal Cloning Machine is skipped too.
+  raw item          = (no producing recipe) half a level before its first consumer (research cost or recipe input).
+Example why research matters: Titanium Ingot is a 2-step recipe, but SuperhardMinerals needs GlassWorks, which costs
+Electronic Parts → titanium comes after electronics.
+"""
+import collections
+import glob
+import json
+import os
+import sys
+
+DATA = sys.argv[1] if len(sys.argv) > 1 else "data"
+OUT = sys.argv[2] if len(sys.argv) > 2 else os.path.join("mods", "BaseStock", "ItemTiers.cs")
+INF = 10 ** 9
+
+
+def load(name):
+    return json.load(open(os.path.join(DATA, name), encoding="utf-8"))
+
+
+g = load("gamedata.json")
+items = {i["id"]: i for i in g["items"]}
+recipes = {r["id"]: r for r in g["recipes"]}
+raw_rec = load("raw/cls_BaseRecipe.json")
+rec_id = {o["_key"]: o["recipeId"] for o in raw_rec}
+rec_start = {o["recipeId"] for o in raw_rec if o.get("startUnlocked")}
+res_id, bld_id, bld_start = {}, {}, set()
+for f in glob.glob(os.path.join(DATA, "raw", "cls_*.json")):
+    for o in json.load(open(f, encoding="utf-8")):
+        if not isinstance(o, dict) or "_key" not in o:
+            continue
+        if "resourceId" in o:
+            res_id[o["_key"]] = o["resourceId"]
+        if "buildingId" in o:
+            bld_id[o["_key"]] = o["buildingId"]
+            if o.get("startUnlocked"):
+                bld_start.add(o["buildingId"])
+research = {o["_key"]: o for o in load("raw/cls_ResearchDescriptor.json")}
+research_unlocked = {rec_id.get(k) for o in research.values() for k in (o["unlockedRecipes"] or [])}
+
+producers = collections.defaultdict(list)  # item -> [(recipe, building id)]
+for b in g["buildings"]:
+    if b["key"] == "AnimalCloningMachine" or b.get("class") == "ContinuousProductionBuilding":
+        continue
+    for rid in b.get("recipes") or []:
+        for o in recipes[rid]["outputs"]:
+            producers[o["item"]].append((recipes[rid], b["id"]))
+
+
+def solve(raw_level):
+    item = {i: (INF if i in producers else raw_level.get(i, 0)) for i in items}
+    res = {k: INF for k in research}
+    for _ in range(100):
+        changed = False
+        for k, o in research.items():
+            v = 1 + max([res[r] for r in o["requirement"] if r in res]
+                        + [item.get(res_id.get(c.get("resource")), 0) for c in (o["researchCost"] or [])] + [0])
+            if min(v, INF) < res[k]:
+                res[k], changed = min(v, INF), True
+        rec_un = collections.defaultdict(lambda: INF, {r: 0 for r in rec_start})
+        bld_un = collections.defaultdict(lambda: INF, {b: 0 for b in bld_start})
+        for k, o in research.items():
+            for rk in o["unlockedRecipes"] or []:
+                if rk in rec_id:
+                    rec_un[rec_id[rk]] = min(rec_un[rec_id[rk]], res[k])
+            for bk in o["unlockedBuildings"] or []:
+                if bk in bld_id:
+                    bld_un[bld_id[bk]] = min(bld_un[bld_id[bk]], res[k])
+        for i, ps in producers.items():
+            best = INF
+            for r, b in ps:
+                ru = rec_un[r["id"]] if r["id"] in research_unlocked or r["id"] in rec_start else 0
+                best = min(best, max([ru, bld_un[b]] + [item.get(x["item"], 0) for x in r["inputs"]]))
+            if best < item[i]:
+                item[i], changed = best, True
+        if not changed:
+            break
+    return item, res
+
+
+item, res = solve({})
+first_use = collections.defaultdict(lambda: INF)
+for k, o in research.items():
+    for c in o["researchCost"] or []:
+        i = res_id.get(c.get("resource"))
+        if i is not None:
+            first_use[i] = min(first_use[i], res[k])
+for i, ps in producers.items():
+    for r, _ in ps:
+        for x in r["inputs"]:
+            first_use[x["item"]] = min(first_use[x["item"]], item[i])
+item, _ = solve({i: max(0, first_use[i] - 0.5) for i in items if i not in producers and first_use[i] < INF})
+
+rows = [(i, item[i]) for i in sorted(items) if item[i] < INF]
+lines = ",\n".join(f"            {{ {i}, {v:g}f }}" for i, v in rows)
+open(OUT, "w", encoding="utf-8", newline="\n").write(f"""// Generated by tools/item_tiers.py from the game data — do not edit. Item id → progression level
+// (research graph; see the script). Packages keep their own level; the mod groups them separately.
+using System.Collections.Generic;
+
+namespace BaseStock
+{{
+    public static class ItemTiers
+    {{
+        public static readonly Dictionary<int, float> Level = new()
+        {{
+{lines}
+        }};
+    }}
+}}
+""")
+print(f"{len(rows)} items -> {OUT}")

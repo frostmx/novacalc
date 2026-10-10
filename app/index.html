@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NovaCalc</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app">
+    <header id="toolbar">
+      <div class="brand"><b data-i18n="UI_TITLE"></b> <span class="muted" data-i18n="UI_SUBTITLE"></span></div>
+      <div class="seg" role="group">
+        <button id="mode-calc" data-i18n="UI_MODE_CALC"></button><button id="mode-arch" data-i18n="UI_MODE_ARCH" data-i18n-title="UI_MODE_ARCH_TITLE"></button>
+      </div>
+      <button id="btn-island" data-i18n="UI_ISLAND_ADD" data-i18n-title="UI_ISLAND_ADD_TITLE"></button>
+      <div id="board-tools">
+        <div class="seg" role="group">
+          <button id="view-islands" data-i18n="UI_VIEW_ISLANDS" data-i18n-title="UI_VIEW_ISLANDS_TITLE"></button><button id="view-chain" data-i18n="UI_VIEW_CHAIN" data-i18n-title="UI_VIEW_CHAIN_TITLE"></button>
+        </div>
+        <button id="btn-arrange" data-i18n="UI_ARRANGE" data-i18n-title="UI_ARRANGE_TITLE"></button>
+      </div>
+      <div class="spacer"></div>
+      <label class="unit"><span data-i18n="UI_RATE_UNIT"></span>
+        <select id="unit">
+          <option value="s" data-i18n="UI_UNIT_S"></option>
+          <option value="min" data-i18n="UI_UNIT_MIN"></option>
+          <option value="h" data-i18n="UI_UNIT_H"></option>
+        </select>
+      </label>
+      <button id="btn-factory" class="primary" data-i18n="UI_FACTORY_IMPORT" data-i18n-title="UI_FACTORY_TITLE"></button>
+      <input id="factory-file" type="file" accept=".dat" hidden>
+      <button id="btn-mods"></button>
+      <button id="btn-fit" data-i18n="UI_FIT"></button>
+      <button id="btn-export" data-i18n="UI_EXPORT"></button>
+      <button id="btn-import" data-i18n="UI_IMPORT"></button>
+      <input id="file-import" type="file" accept="application/json,.json" hidden>
+      <button id="btn-clear" class="danger" data-i18n="UI_CLEAR"></button>
+    </header>
+
+    <aside id="sidebar">
+      <input id="search" type="search" data-i18n-placeholder="UI_SEARCH" autocomplete="off">
+      <div id="catalog"></div>
+    </aside>
+
+    <main id="viewport">
+      <div id="world">
+        <div id="frames"></div>
+        <svg id="edges" xmlns="http://www.w3.org/2000/svg"><g id="edge-layer"></g><path id="temp-edge"></path></svg>
+        <div id="nodes"></div>
+      </div>
+      <div id="arch" hidden>
+        <svg id="arch-hexes" xmlns="http://www.w3.org/2000/svg"></svg>
+        <div id="arch-blds"></div>
+        <svg id="arch-links" xmlns="http://www.w3.org/2000/svg"></svg>
+        <div id="arch-labels"></div>
+      </div>
+      <div id="arch-card" hidden></div>
+      <p id="hint" data-i18n="UI_EMPTY_HINT"></p>
+      <div id="toast" hidden></div>
+    </main>
+
+    <aside id="summary">
+      <h2 data-i18n="UI_SUMMARY"></h2>
+      <div id="summary-body"></div>
+    </aside>
+  </div>
+  <div id="menu" hidden></div>
+  <dialog id="mods">
+    <div class="dlg-head"><b data-i18n="UI_MODIFIERS"></b><button class="icon" id="mods-close">×</button></div>
+    <div class="dlg-body">
+      <section>
+        <h3 data-i18n="UI_SAVE_IMPORT"></h3>
+        <p class="muted" id="save-hint"></p>
+        <button id="btn-save-import" data-i18n="UI_SAVE_CHOOSE"></button>
+        <input id="save-file" type="file" accept=".dat" hidden>
+        <p id="save-status"></p>
+      </section>
+      <section>
+        <h3 data-i18n="UI_GEMS"></h3>
+        <div id="gem-rows"></div>
+      </section>
+      <section>
+        <h3 data-i18n="UI_SKILLS"></h3>
+        <div id="skill-rows"></div>
+      </section>
+    </div>
+  </dialog>
+  <script type="module" src="main.js"></script>
+</body>
+</html>
