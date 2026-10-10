@@ -1,6 +1,6 @@
 # NovaCalc
 
-Production chain calculator and island planner for the game Nova Lands.
+Production chain calculator and island planner for [Nova Lands](https://store.steampowered.com/app/1501610/Nova_Lands/).
 
 **▶ Open it: https://frostmx.github.io/novacalc/**
 
