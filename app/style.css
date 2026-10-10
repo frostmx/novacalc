@@ -333,6 +333,15 @@ button.primary:hover { background: color-mix(in srgb, var(--accent) 85%, #000); 
 #arch-ghost.ok { border-color: #fff; background: rgb(255 255 255 / 0.3); }
 #arch-ghost.bad { border-color: var(--short); background: color-mix(in srgb, var(--short) 30%, transparent); }
 .pb.arm { border-width: 2px; border-color: #fff; background: rgb(255 255 255 / 0.45); }
+.pb.fixed { cursor: default; border-style: dotted; }
+/* props: rocks, bushes, trees (draggable, never covered by buildings) */
+.pp { position: absolute; display: flex; align-items: center; justify-content: center; cursor: move; border-radius: 50%; }
+.pp:hover { background: rgb(255 255 255 / 0.25); }
+.pp.fixed { cursor: default; pointer-events: none; }
+.pp.dragging { opacity: 0.35; }
+.pp .ico { margin: 0; pointer-events: none; }
+#arch-blds.hl .pp { opacity: 0.3; }
+.entry:disabled { opacity: 0.45; cursor: not-allowed; }
 .pb.twin { outline: 4px solid var(--accent); outline-offset: 2px; }
 #arch-links { position: absolute; left: 0; top: 0; width: 1px; height: 1px; overflow: visible; pointer-events: none; }
 #arch-links .bridge { stroke: rgb(255 255 255 / 0.75); stroke-width: 4px; stroke-dasharray: 10 6; }

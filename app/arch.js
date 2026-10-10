@@ -18,7 +18,7 @@ const ARM_REACH = 2.5;    // how close to a shore slot the pointer must be to pl
 export function createArch(ctx) {
   const { el, db, tk, esc } = ctx;
   let armed = null;    // what a click places: { b, entry?, node? }
-  let drag = null;     // moving a placed building
+  let drag = null;     // moving a placed building ({ p }) or a prop ({ prop })
   let selected = null; // placed id
   let ghost = null;
 
@@ -38,15 +38,33 @@ export function createArch(ctx) {
     return { g, center, x: pt.x - center.x, y: pt.y - center.y };
   }
 
-  const othersOn = (g, except) => S().placed.filter(p => p.g === g && !except.includes(p.id))
-    .map(p => ({ b: db.buildings.get(p.b), x: p.x, y: p.y }));
+  /** A prop as a building-like thing for the placement checks: its collider box is the footprint. */
+  const propBox = id => ({ footprint: db.props.get(id)?.box ?? { w: 0.8, h: 0.8, x: 0, y: 0.3 } });
+  const propsOf = st => st.props ?? [];
+
+  // buildings and props (rocks, bushes, trees) of island g: a building may not cover either
+  const othersOn = (g, except) => [
+    ...S().placed.filter(p => p.g === g && !except.includes(p.id)).map(p => ({ b: db.buildings.get(p.b), x: p.x, y: p.y })),
+    ...propsOf(S()).filter(p => p.g === g && !except.includes(p.id)).map(p => ({ b: propBox(p.b), x: p.x, y: p.y })),
+  ];
+  const premade = g => !!S().groups[g]?.premade;
 
   /** Snapped spot for building `b` with its footprint centred at world point `pt`. */
   function spotFor(b, pt, except = []) {
     const isl = islandAt(pt);
     if (!isl) return null;
     const pos = snapPosition(b, isl.center, isl.x, isl.y);
-    return { ...isl, ...pos, ok: canPlace(b, pos.x, pos.y, othersOn(isl.g, except)) };
+    return { ...isl, ...pos, ok: !premade(isl.g) && canPlace(b, pos.x, pos.y, othersOn(isl.g, except)) };
+  }
+
+  /** A prop dragged to world point pt on its own island g: free position, on the ground, off the buildings. */
+  function propSpot(prop, pt) {
+    const center = centerOf(prop.g);
+    const step = 1 / 32;
+    const x = Math.round((pt.x - center.x) / step) * step;
+    const y = Math.round((pt.y - center.y) / step) * step;
+    const buildings = S().placed.filter(p => p.g === prop.g).map(p => ({ b: db.buildings.get(p.b), x: p.x, y: p.y }));
+    return { g: prop.g, center, x, y, ok: canPlace(propBox(prop.b), x, y, buildings) };
   }
 
   /**
@@ -62,7 +80,7 @@ export function createArch(ctx) {
     const [sx, sy] = TRANSPORTER_SLOTS[near.slot];
     return {
       g, center, slot: near.slot, x: sx, y: sy, dist: near.dist, g2, slot2: pair.slot,
-      ok: !!g2 && !taken(g, near.slot) && !taken(g2, pair.slot),
+      ok: !!g2 && !taken(g, near.slot) && !taken(g2, pair.slot) && !premade(g) && !premade(g2),
     };
   }
 
@@ -88,8 +106,9 @@ export function createArch(ctx) {
       used.add(`${isl.q},${isl.r}`);
       const c = hexCenter(isl.q, isl.r);
       const col = db.biomeColors[isl.biome] ?? { ground: '#8a919c', border: null };
+      const tip = isl.premade ? tk('UI_ARCH_PREMADE') : tk('UI_ARCH_ISLAND_TITLE');
       hexes += `<polygon class="island${isl.locked ? ' locked' : ''}" data-group="${esc(g)}" points="${pts(c.x, c.y)}"
-        style="fill:${col.ground};stroke:${col.border ?? col.ground}"><title>${esc(isl.title)} · ${esc(tk('UI_ARCH_ISLAND_TITLE'))}</title></polygon>`;
+        style="fill:${col.ground};stroke:${col.border ?? col.ground}"><title>${esc(isl.title)} · ${esc(tip)}</title></polygon>`;
       // title along the top edge, energy along the bottom one
       labels += `<div class="arch-title" style="left:${c.x * U}px;top:${-(c.y + RY * DRAW_SCALE) * U + 12}px">${isl.locked ? '🔒 ' : ''}${esc(isl.title)}<button class="icon" data-act="del-island" data-group="${esc(g)}" title="${esc(tk('UI_ISLAND_DELETE'))}">×</button></div>`;
       const e = calc?.energyByGroup.get(g);
@@ -108,6 +127,17 @@ export function createArch(ctx) {
 
     const sel = st.placed.find(p => p.id === selected);
     let blds = '';
+    for (const p of propsOf(st)) { // rocks, bushes, trees: under the buildings
+      const isl = st.groups[p.g];
+      if (!isl || isl.q == null) continue;
+      const c = hexCenter(isl.q, isl.r);
+      const r = rectAt(propBox(p.b), p.x, p.y);
+      const w = (r.x1 - r.x0) * U;
+      const h = (r.y1 - r.y0) * U;
+      const size = Math.max(8, Math.floor(Math.min(w, h)));
+      blds += `<div class="pp${isl.premade ? ' fixed' : ''}" data-prop="${esc(p.id)}" style="left:${(c.x + r.x0) * U}px;top:${-(c.y + r.y1) * U}px;width:${w}px;height:${h}px"
+        title="${esc(db.propName(db.props.get(p.b)))}">${ctx.iconHtml('props', p.b, size)}</div>`;
+    }
     for (const p of st.placed) {
       const isl = st.groups[p.g];
       if (!isl || isl.q == null) continue;
@@ -127,9 +157,11 @@ export function createArch(ctx) {
       const size = Math.max(8, Math.min(96, Math.floor(Math.min(w, h) * 0.8)));
       const icon = carried != null ? ctx.iconHtml('items', carried, size)
         : out != null && !cn.gen ? ctx.iconHtml('items', out, size) : ctx.iconHtml('buildings', p.b, size);
-      const extra = (p.id === selected ? ' selected' : '') + (sel?.twin === p.id ? ' twin' : '') + (isArm(b) ? ' arm' : '');
+      const extra = (p.id === selected ? ' selected' : '') + (sel?.twin === p.id ? ' twin' : '') + (isArm(b) ? ' arm' : '')
+        + (p.fixed ? ' fixed' : '');
+      const title = p.fixed ? `${label}\n${tk('UI_ARCH_FIXED')}` : label;
       blds += `<div class="pb ${status}${extra}" data-p="${esc(p.id)}"${p.node != null ? ` data-node="${esc(p.node)}"` : ''}
-        style="left:${(c.x + r.x0) * U}px;top:${-(c.y + r.y1) * U}px;width:${w}px;height:${h}px" title="${esc(label)}">${icon}</div>`;
+        style="left:${(c.x + r.x0) * U}px;top:${-(c.y + r.y1) * U}px;width:${w}px;height:${h}px" title="${esc(title)}">${icon}</div>`;
     }
     el.blds.innerHTML = blds + '<div id="arch-ghost" hidden></div>';
     ghost = el.blds.querySelector('#arch-ghost');
@@ -235,7 +267,7 @@ export function createArch(ctx) {
     }
   }
 
-  function showGhost(b, spot) {
+  function showGhost(b, spot) { // b: a building, or a prop's propBox
     if (!ghost) return;
     if (!spot) { ghost.hidden = true; return; }
     const r = rectAt(b, spot.x, spot.y);
@@ -304,10 +336,21 @@ export function createArch(ctx) {
       const p = S().placed.find(x => x.id === pbEl.dataset.p);
       if (!p) return false;
       select(p.id); // re-renders: take the new element
+      if (p.fixed) return true; // NPCs, landmarks: select only
       const elem = el.blds.querySelector(`.pb[data-p="${CSS.escape(p.id)}"]`) ?? pbEl;
       const c = centerOf(p.g);
       const f = footprintOf(db.buildings.get(p.b));
       drag = { p, elem, dx: pt.x - (c.x + p.x + f.x), dy: pt.y - (c.y + p.y + f.y), sx: ev.clientX, sy: ev.clientY };
+      return true;
+    }
+    const ppEl = ev.target.closest('.pp:not(.fixed)');
+    if (ppEl) {
+      const prop = (S().props ?? []).find(x => x.id === ppEl.dataset.prop);
+      if (!prop) return false;
+      select(null);
+      const elem = el.blds.querySelector(`.pp[data-prop="${CSS.escape(prop.id)}"]`) ?? ppEl;
+      const c = centerOf(prop.g);
+      drag = { prop, elem, dx: pt.x - (c.x + prop.x), dy: pt.y - (c.y + prop.y), sx: ev.clientX, sy: ev.clientY };
       return true;
     }
     select(null);
@@ -315,6 +358,15 @@ export function createArch(ctx) {
   }
 
   function pointerMove(ev) {
+    if (drag?.prop) {
+      if (!drag.moved && Math.hypot(ev.clientX - drag.sx, ev.clientY - drag.sy) < 4) return true;
+      drag.moved = true;
+      drag.elem.classList.add('dragging');
+      const pt = toUnits(ev.clientX, ev.clientY);
+      drag.spot = propSpot(drag.prop, { x: pt.x - drag.dx, y: pt.y - drag.dy });
+      showGhost(propBox(drag.prop.b), drag.spot);
+      return true;
+    }
     if (drag) {
       if (!drag.moved && Math.hypot(ev.clientX - drag.sx, ev.clientY - drag.sy) < 4) return true;
       drag.moved = true;
@@ -345,7 +397,8 @@ export function createArch(ctx) {
     if (ghost) ghost.hidden = true;
     d.elem.classList.remove('dragging');
     if (d.moved && d.spot?.ok) {
-      if (d.spot.slot != null) ctx.ops.moveTransporter(d.p.id, d.spot.slot);
+      if (d.prop) ctx.ops.moveProp(d.prop.id, d.spot.x, d.spot.y);
+      else if (d.spot.slot != null) ctx.ops.moveTransporter(d.p.id, d.spot.slot);
       else ctx.ops.move(d.p.id, d.spot.g, d.spot.x, d.spot.y);
     }
     return true;
@@ -361,6 +414,7 @@ export function createArch(ctx) {
     if (ev.key === 'Escape') { if (armed) disarm(); else select(null); return true; }
     if ((ev.key === 'Delete' || ev.key === 'Backspace') && selected) {
       ev.preventDefault();
+      if (S().placed.find(p => p.id === selected)?.fixed) return true;
       const id = selected;
       selected = null;
       ctx.ops.remove(id);

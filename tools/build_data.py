@@ -113,9 +113,30 @@ def main(root, raw_dir, out_dir, langs):
         po = o.get("placementOffset")
         if po:
             b["placementOffset"] = [exact(po["x"]), exact(po["y"])]
+        if o.get("canBeMoved"):  # BaseBuilding.canBeMoved: the player may move it (NPCs, landmarks, transporters: no)
+            b["movable"] = True
         buildings.append(b)
     # dedupe by id (same prefab can appear in several scenes); prefer the copy with recipes and a footprint
     buildings = list({b["id"]: b for b in sorted(buildings, key=lambda b: ("footprint" in b, len(b.get("recipes", []))))}.values())
+
+    # --- props: rocks, bushes, trees, ores on the islands (saves: Area.Props[], world positions) ---
+    # box = bounds of the non-trigger colliders (small physics capsule + the sprite-sized click polygon), relative
+    # to the prop position; loot = items it drops when extracted
+    props = {}
+    for o in objs.values():
+        if "buildingId" not in o or not o.get("isProp"):
+            continue
+        cs = [c for c in o.get("_colliders") or [] if not c.get("trigger") and c.get("size")]
+        p = {"id": o["buildingId"], "key": o.get("_goName") or o["m_Name"],
+             "loot": [i for i in (item_id.get(l.get("resource")) for l in o.get("loot") or []) if i is not None]}
+        if cs:
+            x0 = min(c["offset"][0] + c["position"][0] - c["size"][0] / 2 for c in cs)
+            x1 = max(c["offset"][0] + c["position"][0] + c["size"][0] / 2 for c in cs)
+            y0 = min(c["offset"][1] + c["position"][1] - c["size"][1] / 2 for c in cs)
+            y1 = max(c["offset"][1] + c["position"][1] + c["size"][1] / 2 for c in cs)
+            p["box"] = {"w": round(x1 - x0, 3), "h": round(y1 - y0, 3), "x": round((x0 + x1) / 2, 3), "y": round((y0 + y1) / 2, 3)}
+        if o["buildingId"] not in props or ("box" in p and "box" not in props[o["buildingId"]]):
+            props[o["buildingId"]] = p
 
     # --- modifiers ---
     def bpairs(lst, *fields):
@@ -192,6 +213,7 @@ def main(root, raw_dir, out_dir, langs):
         "items": sorted(items.values(), key=lambda x: x["id"]),
         "recipes": sorted(recipes.values(), key=lambda x: x["id"]),
         "buildings": sorted(buildings, key=lambda x: x["id"]),
+        "props": sorted(props.values(), key=lambda x: x["id"]),
         "creatures": creatures,
         "crops": crops,
         # Driller recipes offered per island (DrillerBuilding.get_AvailableRecipes -> WorldBiome.drillerExtractableResources);

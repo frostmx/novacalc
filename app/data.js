@@ -149,6 +149,9 @@ export async function loadData() {
   const transporterPerMin = tr ? (60 * tr.perRound) / Math.max(tr.duration, tr.tryInterval) : 0;
   const inputArmId = g.buildings.find(b => b.key === 'TransporterContainerInput')?.id;
   const outputArmId = g.buildings.find(b => b.key === 'TransporterContainerOutput')?.id;
+  // props on the islands (rocks, bushes, trees, ores): collider box and what they drop
+  const props = new Map((g.props ?? []).map(p => [p.id, p]));
+  const propName = p => (p?.loot?.length ? p.loot.map(itemName).join(', ') : p?.key ?? '');
 
   // sprite atlas: index of an item's / building's cell, or null
   const icon = (kind, id) => icons?.[kind]?.[id] ?? null;
@@ -157,6 +160,7 @@ export async function loadData() {
     icons, icon,
     skills, gems, lubricants, fertilizers, overclockGroups, overclockGroupOf, productionSkills, gemBuildingId,
     drill, drillBiomes, drillIslands, biomeColors, biomes, infraBuildings, transporterPerMin, inputArmId, outputArmId,
+    props, propName,
     skillName, skillDesc, waterItem: g.constants?.waterBall, goalPresets, goalLabel, itemsByName,
     items, recipes, buildings, creatures, entries, entriesByBuilding, productionBuildings,
     producersOf: id => producers.get(id) ?? [],

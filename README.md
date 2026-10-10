@@ -33,6 +33,15 @@ Everything runs in your browser. A save file you import is read locally and neve
 - Transporters: arms placed on shore slots, paired with the facing island and showing the item they carry.
   Links between islands are limited by what the transporters carry (60 items/min each).
 
+**Save editor**
+- After importing a save, the architect edits that world: place, move and delete buildings (an Advanced Farm moves
+  with its plots and plants), change recipes, lay transporters, move rocks and bushes out of the way.
+- Rocks, bushes and trees are shown on the islands; buildings can't be put on top of them. NPCs, shops and landmarks
+  stay where they are. New buildings are free, but only types your save already has can be placed.
+- "Download save" writes the changes into a copy of your save file. Putting it into
+  `%USERPROFILE%\AppData\LocalLow\BEHEMUTT\Nova Lands\Worlds\1.1.0\` is up to you: close the world first and keep a
+  backup of the old file.
+
 ## Where the numbers come from
 
 All data is extracted from the game files (Unity IL2CPP): recipes, buildings, modifiers, footprints, biome colours,

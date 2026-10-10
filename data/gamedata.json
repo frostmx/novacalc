@@ -7000,7 +7000,8 @@
    "placementOffset": [
     0.0,
     0.03125
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 33,
@@ -7034,7 +7035,8 @@
    "placementOffset": [
     0.25,
     0.03125
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 34,
@@ -7081,7 +7083,8 @@
    "placementOffset": [
     0.0,
     0.0625
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 36,
@@ -7133,7 +7136,8 @@
    "placementOffset": [
     0.0,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 40,
@@ -7196,7 +7200,8 @@
    "placementOffset": [
     0.25,
     -0.125
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 42,
@@ -7220,7 +7225,8 @@
    "placementOffset": [
     0.0,
     -0.03125
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 43,
@@ -7272,7 +7278,8 @@
    "placementOffset": [
     0.25,
     0.03125
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 51,
@@ -7305,7 +7312,8 @@
    "placementOffset": [
     0.0,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 57,
@@ -7350,7 +7358,8 @@
    "placementOffset": [
     0.25,
     0.03125
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 58,
@@ -7487,7 +7496,8 @@
    "placementOffset": [
     0.0,
     0.03125
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 148,
@@ -7514,7 +7524,8 @@
    "placementOffset": [
     0.25,
     0.0625
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 150,
@@ -7551,7 +7562,8 @@
    "placementOffset": [
     0.25,
     0.03125
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 154,
@@ -7575,7 +7587,8 @@
    "placementOffset": [
     0.25,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 155,
@@ -7619,7 +7632,8 @@
    "placementOffset": [
     0.0,
     0.03125
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 171,
@@ -7643,7 +7657,8 @@
    "placementOffset": [
     0.0,
     0.3125
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 172,
@@ -7763,7 +7778,8 @@
    "placementOffset": [
     0.0,
     0.03125
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 201,
@@ -7796,7 +7812,8 @@
    "placementOffset": [
     0.0,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 219,
@@ -7843,7 +7860,8 @@
    "placementOffset": [
     0.0,
     0.03125
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 231,
@@ -7876,7 +7894,8 @@
    "placementOffset": [
     0.0,
     0.16
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 232,
@@ -7952,6 +7971,12 @@
    ],
    "productionSpeed": 0.8,
    "lubricant": false,
+   "footprint": {
+    "w": 3.537801,
+    "h": 2.375249,
+    "x": 0.224506,
+    "y": -0.187625
+   },
    "placementOffset": [
     0.25,
     0.03125
@@ -8081,7 +8106,8 @@
    "placementOffset": [
     0.0,
     0.03125
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 245,
@@ -8328,7 +8354,8 @@
    "placementOffset": [
     0.25,
     0.25
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 325,
@@ -8352,7 +8379,8 @@
    "placementOffset": [
     0.25,
     0.03125
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 334,
@@ -8380,7 +8408,8 @@
    "placementOffset": [
     0.25,
     0.15625
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 387,
@@ -8421,7 +8450,8 @@
    "placementOffset": [
     0.0,
     -0.15625
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 430,
@@ -8454,7 +8484,8 @@
    "placementOffset": [
     0.0,
     0.09375
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 439,
@@ -8495,7 +8526,8 @@
    "placementOffset": [
     0.25,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 446,
@@ -8581,7 +8613,8 @@
    "placementOffset": [
     0.0,
     0.03125
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 519,
@@ -8748,7 +8781,8 @@
    "placementOffset": [
     0.0,
     0.03125
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 751,
@@ -8776,7 +8810,8 @@
    "placementOffset": [
     -0.25,
     -0.28125
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 761,
@@ -8808,7 +8843,8 @@
    "placementOffset": [
     0.0,
     0.1875
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 770,
@@ -8832,7 +8868,8 @@
    "placementOffset": [
     0.25,
     0.25
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 771,
@@ -8856,7 +8893,8 @@
    "placementOffset": [
     0.25,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 773,
@@ -8897,7 +8935,8 @@
    "placementOffset": [
     0.0,
     0.03125
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 774,
@@ -8940,7 +8979,8 @@
    "placementOffset": [
     0.0,
     0.03125
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 789,
@@ -8968,7 +9008,8 @@
    "placementOffset": [
     0.0,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 836,
@@ -9234,7 +9275,8 @@
    "placementOffset": [
     0.25,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 866,
@@ -9253,7 +9295,8 @@
    "placementOffset": [
     0.25,
     0.25
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 867,
@@ -9272,7 +9315,8 @@
    "placementOffset": [
     0.25,
     0.25
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 868,
@@ -9291,7 +9335,8 @@
    "placementOffset": [
     0.25,
     0.25
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 869,
@@ -9310,7 +9355,8 @@
    "placementOffset": [
     0.0,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 874,
@@ -9518,7 +9564,8 @@
    "placementOffset": [
     0.25,
     -0.125
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 942,
@@ -9563,7 +9610,8 @@
    "placementOffset": [
     0.25,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 958,
@@ -9582,7 +9630,8 @@
    "placementOffset": [
     0.0,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 959,
@@ -9601,7 +9650,8 @@
    "placementOffset": [
     0.0,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 963,
@@ -9620,7 +9670,8 @@
    "placementOffset": [
     0.0,
     0.25
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 964,
@@ -9639,7 +9690,8 @@
    "placementOffset": [
     0.25,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 965,
@@ -9658,7 +9710,8 @@
    "placementOffset": [
     0.25,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 966,
@@ -9677,7 +9730,8 @@
    "placementOffset": [
     0.25,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 971,
@@ -9696,7 +9750,8 @@
    "placementOffset": [
     0.0,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 972,
@@ -9715,7 +9770,8 @@
    "placementOffset": [
     0.0,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 973,
@@ -9734,7 +9790,8 @@
    "placementOffset": [
     0.0,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 974,
@@ -9753,7 +9810,8 @@
    "placementOffset": [
     0.0,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 975,
@@ -9772,7 +9830,8 @@
    "placementOffset": [
     0.0,
     0.25
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 981,
@@ -9791,7 +9850,8 @@
    "placementOffset": [
     0.25,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 982,
@@ -9810,7 +9870,8 @@
    "placementOffset": [
     0.25,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 983,
@@ -9829,7 +9890,8 @@
    "placementOffset": [
     0.25,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 984,
@@ -9848,7 +9910,8 @@
    "placementOffset": [
     0.25,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 986,
@@ -9867,7 +9930,8 @@
    "placementOffset": [
     0.0,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 987,
@@ -9886,7 +9950,8 @@
    "placementOffset": [
     0.0,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 988,
@@ -9905,7 +9970,8 @@
    "placementOffset": [
     0.0,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 989,
@@ -9924,7 +9990,8 @@
    "placementOffset": [
     0.0,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 991,
@@ -9943,7 +10010,8 @@
    "placementOffset": [
     0.25,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 992,
@@ -9962,7 +10030,8 @@
    "placementOffset": [
     0.25,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 993,
@@ -9981,7 +10050,8 @@
    "placementOffset": [
     0.0,
     0.25
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 994,
@@ -10000,7 +10070,8 @@
    "placementOffset": [
     0.25,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 999,
@@ -10019,7 +10090,8 @@
    "placementOffset": [
     0.0,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1000,
@@ -10038,7 +10110,8 @@
    "placementOffset": [
     0.0,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1003,
@@ -10057,7 +10130,8 @@
    "placementOffset": [
     0.0,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1004,
@@ -10076,7 +10150,8 @@
    "placementOffset": [
     0.0,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1005,
@@ -10095,7 +10170,8 @@
    "placementOffset": [
     0.0,
     0.25
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1006,
@@ -10114,7 +10190,8 @@
    "placementOffset": [
     0.25,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1007,
@@ -10133,7 +10210,8 @@
    "placementOffset": [
     0.0,
     0.25
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1008,
@@ -10152,7 +10230,8 @@
    "placementOffset": [
     0.25,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1016,
@@ -10171,7 +10250,8 @@
    "placementOffset": [
     0.25,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1017,
@@ -10190,7 +10270,8 @@
    "placementOffset": [
     0.25,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1018,
@@ -10209,7 +10290,8 @@
    "placementOffset": [
     0.0,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1019,
@@ -10228,7 +10310,8 @@
    "placementOffset": [
     0.0,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1021,
@@ -10247,7 +10330,8 @@
    "placementOffset": [
     0.0,
     0.25
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1023,
@@ -10266,7 +10350,8 @@
    "placementOffset": [
     0.0,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1025,
@@ -10285,7 +10370,8 @@
    "placementOffset": [
     0.0,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1026,
@@ -10304,7 +10390,8 @@
    "placementOffset": [
     0.0,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1027,
@@ -10323,7 +10410,8 @@
    "placementOffset": [
     0.0,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1028,
@@ -10342,7 +10430,8 @@
    "placementOffset": [
     0.0,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1029,
@@ -10361,7 +10450,8 @@
    "placementOffset": [
     0.25,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1030,
@@ -10380,7 +10470,8 @@
    "placementOffset": [
     0.25,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1031,
@@ -10399,7 +10490,8 @@
    "placementOffset": [
     0.25,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1032,
@@ -10418,7 +10510,8 @@
    "placementOffset": [
     0.25,
     0.25
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1033,
@@ -10437,7 +10530,8 @@
    "placementOffset": [
     0.25,
     0.25
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1034,
@@ -10456,7 +10550,8 @@
    "placementOffset": [
     0.25,
     0.25
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1035,
@@ -10475,7 +10570,8 @@
    "placementOffset": [
     0.25,
     0.25
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1038,
@@ -10494,7 +10590,8 @@
    "placementOffset": [
     0.25,
     0.25
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1039,
@@ -10513,7 +10610,8 @@
    "placementOffset": [
     0.25,
     0.25
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1040,
@@ -10532,7 +10630,8 @@
    "placementOffset": [
     0.25,
     0.25
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1041,
@@ -10551,7 +10650,8 @@
    "placementOffset": [
     0.25,
     0.25
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1044,
@@ -10570,7 +10670,8 @@
    "placementOffset": [
     0.25,
     0.25
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1045,
@@ -10589,7 +10690,8 @@
    "placementOffset": [
     0.25,
     0.25
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1046,
@@ -10608,7 +10710,8 @@
    "placementOffset": [
     0.25,
     0.25
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1047,
@@ -10627,7 +10730,8 @@
    "placementOffset": [
     0.25,
     0.25
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1050,
@@ -10646,7 +10750,8 @@
    "placementOffset": [
     0.25,
     0.25
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1051,
@@ -10665,7 +10770,8 @@
    "placementOffset": [
     0.25,
     0.25
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1052,
@@ -10684,7 +10790,8 @@
    "placementOffset": [
     0.25,
     0.25
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1053,
@@ -10703,7 +10810,8 @@
    "placementOffset": [
     0.25,
     0.25
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1056,
@@ -10722,7 +10830,8 @@
    "placementOffset": [
     0.25,
     0.25
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1057,
@@ -10741,7 +10850,8 @@
    "placementOffset": [
     0.25,
     0.25
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1058,
@@ -10760,7 +10870,8 @@
    "placementOffset": [
     0.25,
     0.25
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1059,
@@ -10779,7 +10890,8 @@
    "placementOffset": [
     0.25,
     0.25
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1062,
@@ -10798,7 +10910,8 @@
    "placementOffset": [
     0.25,
     0.25
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1063,
@@ -10817,7 +10930,8 @@
    "placementOffset": [
     0.25,
     0.25
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1064,
@@ -10836,7 +10950,8 @@
    "placementOffset": [
     0.25,
     0.25
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1065,
@@ -10855,7 +10970,8 @@
    "placementOffset": [
     0.25,
     0.25
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1066,
@@ -10874,7 +10990,8 @@
    "placementOffset": [
     0.0,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1067,
@@ -10893,7 +11010,8 @@
    "placementOffset": [
     0.0,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1068,
@@ -10912,7 +11030,8 @@
    "placementOffset": [
     0.0,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1069,
@@ -10931,7 +11050,8 @@
    "placementOffset": [
     0.0,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1070,
@@ -10950,7 +11070,8 @@
    "placementOffset": [
     0.0,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1071,
@@ -10969,7 +11090,8 @@
    "placementOffset": [
     0.0,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1072,
@@ -10988,7 +11110,8 @@
    "placementOffset": [
     0.0,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1073,
@@ -11007,7 +11130,8 @@
    "placementOffset": [
     0.0,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1074,
@@ -11026,7 +11150,8 @@
    "placementOffset": [
     0.0,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1075,
@@ -11045,7 +11170,8 @@
    "placementOffset": [
     0.0,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1076,
@@ -11064,7 +11190,8 @@
    "placementOffset": [
     0.0,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1077,
@@ -11083,7 +11210,8 @@
    "placementOffset": [
     0.0,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1078,
@@ -11102,7 +11230,8 @@
    "placementOffset": [
     0.0,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1079,
@@ -11121,7 +11250,8 @@
    "placementOffset": [
     0.0,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1080,
@@ -11140,7 +11270,8 @@
    "placementOffset": [
     0.0,
     0.25
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1081,
@@ -11159,7 +11290,8 @@
    "placementOffset": [
     0.0,
     0.25
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1082,
@@ -11178,7 +11310,8 @@
    "placementOffset": [
     0.0,
     0.25
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1083,
@@ -11197,7 +11330,8 @@
    "placementOffset": [
     0.0,
     0.25
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1084,
@@ -11216,7 +11350,8 @@
    "placementOffset": [
     0.0,
     0.25
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1085,
@@ -11235,7 +11370,8 @@
    "placementOffset": [
     0.0,
     0.25
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1086,
@@ -11254,7 +11390,8 @@
    "placementOffset": [
     0.0,
     0.25
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1087,
@@ -11273,7 +11410,8 @@
    "placementOffset": [
     0.0,
     0.25
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1088,
@@ -11292,7 +11430,8 @@
    "placementOffset": [
     0.0,
     0.25
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1103,
@@ -11324,7 +11463,8 @@
    "placementOffset": [
     0.0,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1106,
@@ -11343,7 +11483,8 @@
    "placementOffset": [
     0.0,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1107,
@@ -11362,7 +11503,8 @@
    "placementOffset": [
     0.0,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1108,
@@ -11381,7 +11523,8 @@
    "placementOffset": [
     0.0,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1109,
@@ -11400,7 +11543,8 @@
    "placementOffset": [
     0.0,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1110,
@@ -11419,7 +11563,8 @@
    "placementOffset": [
     0.0,
     0.25
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1111,
@@ -11438,7 +11583,8 @@
    "placementOffset": [
     0.0,
     0.25
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1112,
@@ -11457,7 +11603,8 @@
    "placementOffset": [
     0.0,
     0.25
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1113,
@@ -11476,7 +11623,8 @@
    "placementOffset": [
     0.0,
     0.25
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1114,
@@ -11495,7 +11643,8 @@
    "placementOffset": [
     0.0,
     0.25
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1115,
@@ -11514,7 +11663,8 @@
    "placementOffset": [
     0.0,
     0.25
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1116,
@@ -11533,7 +11683,8 @@
    "placementOffset": [
     0.0,
     0.25
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1117,
@@ -11552,7 +11703,8 @@
    "placementOffset": [
     0.0,
     0.25
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1118,
@@ -11571,7 +11723,8 @@
    "placementOffset": [
     0.0,
     0.25
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1119,
@@ -11590,7 +11743,8 @@
    "placementOffset": [
     0.0,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1120,
@@ -11609,7 +11763,8 @@
    "placementOffset": [
     0.25,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1121,
@@ -11628,7 +11783,8 @@
    "placementOffset": [
     0.25,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1122,
@@ -11647,7 +11803,8 @@
    "placementOffset": [
     0.0,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1123,
@@ -11666,7 +11823,8 @@
    "placementOffset": [
     0.25,
     0.25
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1124,
@@ -11685,7 +11843,8 @@
    "placementOffset": [
     0.25,
     0.25
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1125,
@@ -11704,7 +11863,8 @@
    "placementOffset": [
     0.0,
     0.25
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1157,
@@ -11723,7 +11883,8 @@
    "placementOffset": [
     0.25,
     0.25
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1158,
@@ -11742,7 +11903,8 @@
    "placementOffset": [
     0.25,
     0.25
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1159,
@@ -11761,7 +11923,8 @@
    "placementOffset": [
     0.25,
     0.25
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1160,
@@ -11780,7 +11943,8 @@
    "placementOffset": [
     0.25,
     0.25
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1161,
@@ -11799,7 +11963,8 @@
    "placementOffset": [
     0.25,
     0.25
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1162,
@@ -11818,7 +11983,8 @@
    "placementOffset": [
     0.25,
     0.25
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1163,
@@ -11837,7 +12003,8 @@
    "placementOffset": [
     0.25,
     0.25
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1164,
@@ -11856,7 +12023,8 @@
    "placementOffset": [
     0.25,
     0.25
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1165,
@@ -11875,7 +12043,8 @@
    "placementOffset": [
     0.25,
     0.25
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1166,
@@ -11894,7 +12063,8 @@
    "placementOffset": [
     0.25,
     0.25
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1170,
@@ -11913,7 +12083,8 @@
    "placementOffset": [
     0.25,
     0.25
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1171,
@@ -11932,7 +12103,8 @@
    "placementOffset": [
     0.25,
     0.25
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1172,
@@ -11951,7 +12123,8 @@
    "placementOffset": [
     0.25,
     0.25
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1173,
@@ -11970,7 +12143,8 @@
    "placementOffset": [
     0.25,
     0.25
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1174,
@@ -11989,7 +12163,8 @@
    "placementOffset": [
     0.25,
     0.25
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1175,
@@ -12008,7 +12183,8 @@
    "placementOffset": [
     0.25,
     0.25
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1176,
@@ -12027,7 +12203,8 @@
    "placementOffset": [
     0.0,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1177,
@@ -12046,7 +12223,8 @@
    "placementOffset": [
     0.25,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1178,
@@ -12065,7 +12243,8 @@
    "placementOffset": [
     0.25,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1179,
@@ -12084,7 +12263,8 @@
    "placementOffset": [
     0.25,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1180,
@@ -12103,7 +12283,8 @@
    "placementOffset": [
     0.25,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1181,
@@ -12122,7 +12303,8 @@
    "placementOffset": [
     0.25,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1182,
@@ -12141,7 +12323,8 @@
    "placementOffset": [
     0.25,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1183,
@@ -12160,7 +12343,8 @@
    "placementOffset": [
     0.25,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1184,
@@ -12179,7 +12363,8 @@
    "placementOffset": [
     0.25,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1185,
@@ -12198,7 +12383,8 @@
    "placementOffset": [
     0.25,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1186,
@@ -12217,7 +12403,8 @@
    "placementOffset": [
     0.25,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1187,
@@ -12236,7 +12423,8 @@
    "placementOffset": [
     0.25,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1188,
@@ -12255,7 +12443,8 @@
    "placementOffset": [
     0.25,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1189,
@@ -12274,7 +12463,8 @@
    "placementOffset": [
     0.25,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1190,
@@ -12293,7 +12483,8 @@
    "placementOffset": [
     0.0,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1213,
@@ -12321,7 +12512,8 @@
    "placementOffset": [
     0.25,
     -0.125
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1214,
@@ -12353,7 +12545,8 @@
    "placementOffset": [
     0.25,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1215,
@@ -12393,7 +12586,8 @@
    "placementOffset": [
     0.0,
     0.34375
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1217,
@@ -12490,7 +12684,8 @@
    "placementOffset": [
     0.25,
     0.15625
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1231,
@@ -12534,7 +12729,8 @@
    "placementOffset": [
     0.21875,
     0.125
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1250,
@@ -12562,7 +12758,8 @@
    "placementOffset": [
     0.25,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1253,
@@ -12590,7 +12787,8 @@
    "placementOffset": [
     0.25,
     0.03125
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1256,
@@ -12630,7 +12828,8 @@
    "placementOffset": [
     0.25,
     0.15625
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1278,
@@ -12702,7 +12901,8 @@
    "placementOffset": [
     0.25,
     -0.09375
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1288,
@@ -12850,7 +13050,8 @@
    "placementOffset": [
     0.0,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1345,
@@ -12869,7 +13070,8 @@
    "placementOffset": [
     0.0,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1347,
@@ -12888,7 +13090,8 @@
    "placementOffset": [
     0.0,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1348,
@@ -12907,7 +13110,8 @@
    "placementOffset": [
     0.0,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1349,
@@ -12926,7 +13130,8 @@
    "placementOffset": [
     0.0,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1350,
@@ -12945,7 +13150,8 @@
    "placementOffset": [
     0.0,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1351,
@@ -12964,7 +13170,8 @@
    "placementOffset": [
     0.0,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1352,
@@ -12983,7 +13190,8 @@
    "placementOffset": [
     0.0,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1353,
@@ -13002,7 +13210,8 @@
    "placementOffset": [
     0.0,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1354,
@@ -13021,7 +13230,8 @@
    "placementOffset": [
     0.0,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1355,
@@ -13040,7 +13250,8 @@
    "placementOffset": [
     0.0,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1356,
@@ -13059,7 +13270,8 @@
    "placementOffset": [
     0.0,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1357,
@@ -13078,7 +13290,8 @@
    "placementOffset": [
     0.0,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1358,
@@ -13097,7 +13310,8 @@
    "placementOffset": [
     0.0,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1359,
@@ -13116,7 +13330,8 @@
    "placementOffset": [
     0.0,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1360,
@@ -13135,7 +13350,8 @@
    "placementOffset": [
     0.0,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1361,
@@ -13154,7 +13370,8 @@
    "placementOffset": [
     -0.25,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1362,
@@ -13173,7 +13390,8 @@
    "placementOffset": [
     -0.25,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1363,
@@ -13192,7 +13410,8 @@
    "placementOffset": [
     0.0,
     0.0
-   ]
+   ],
+   "movable": true
   },
   {
    "id": 1364,
@@ -13211,7 +13430,1148 @@
    "placementOffset": [
     0.0,
     0.0
+   ],
+   "movable": true
+  }
+ ],
+ "props": [
+  {
+   "id": 27,
+   "key": "BehemuttiumProp",
+   "loot": [
+    0
+   ],
+   "box": {
+    "w": 1.056,
+    "h": 1.322,
+    "x": -0.005,
+    "y": 0.398
+   }
+  },
+  {
+   "id": 28,
+   "key": "RockProp00",
+   "loot": [
+    5
+   ],
+   "box": {
+    "w": 0.707,
+    "h": 0.887,
+    "x": -0.008,
+    "y": 0.205
+   }
+  },
+  {
+   "id": 29,
+   "key": "TwigBushProp",
+   "loot": [
+    6
+   ],
+   "box": {
+    "w": 0.896,
+    "h": 0.911,
+    "x": -0.002,
+    "y": 0.387
+   }
+  },
+  {
+   "id": 30,
+   "key": "WaterPlantProp",
+   "loot": [
+    143
+   ],
+   "box": {
+    "w": 0.743,
+    "h": 0.969,
+    "x": 0.017,
+    "y": 0.324
+   }
+  },
+  {
+   "id": 35,
+   "key": "BehemuttiumMine",
+   "loot": [
+    0
+   ],
+   "box": {
+    "w": 1.264,
+    "h": 0.744,
+    "x": 0.003,
+    "y": 0.134
+   }
+  },
+  {
+   "id": 37,
+   "key": "RockIronProp",
+   "loot": [
+    2
+   ],
+   "box": {
+    "w": 0.707,
+    "h": 0.887,
+    "x": -0.008,
+    "y": 0.205
+   }
+  },
+  {
+   "id": 38,
+   "key": "RockCopperProp",
+   "loot": [
+    9
+   ],
+   "box": {
+    "w": 0.707,
+    "h": 0.887,
+    "x": -0.008,
+    "y": 0.205
+   }
+  },
+  {
+   "id": 45,
+   "key": "BeeBodyProp",
+   "loot": [
+    14
+   ],
+   "box": {
+    "w": 0.627,
+    "h": 0.467,
+    "x": 0.002,
+    "y": 0.037
+   }
+  },
+  {
+   "id": 46,
+   "key": "HiveBurrow",
+   "loot": [],
+   "box": {
+    "w": 0.96,
+    "h": 1.166,
+    "x": -0.005,
+    "y": 0.23
+   }
+  },
+  {
+   "id": 47,
+   "key": "BerryBushProp",
+   "loot": [
+    141
+   ],
+   "box": {
+    "w": 0.87,
+    "h": 0.721,
+    "x": 0.007,
+    "y": 0.228
+   }
+  },
+  {
+   "id": 48,
+   "key": "AntorkBodyProp",
+   "loot": [
+    14
+   ],
+   "box": {
+    "w": 0.845,
+    "h": 0.467,
+    "x": -0.01,
+    "y": 0.115
+   }
+  },
+  {
+   "id": 49,
+   "key": "OneEyedCrabBodyProp",
+   "loot": [
+    14
+   ],
+   "box": {
+    "w": 0.694,
+    "h": 0.501,
+    "x": 0.028,
+    "y": -0.002
+   }
+  },
+  {
+   "id": 50,
+   "key": "PodCapsule",
+   "loot": [
+    12,
+    20
+   ],
+   "box": {
+    "w": 1.018,
+    "h": 1.006,
+    "x": 0.015,
+    "y": 0.244
+   }
+  },
+  {
+   "id": 52,
+   "key": "Cactus",
+   "loot": [
+    142
+   ],
+   "box": {
+    "w": 0.754,
+    "h": 0.908,
+    "x": 0.04,
+    "y": 0.382
+   }
+  },
+  {
+   "id": 53,
+   "key": "SandRockProp",
+   "loot": [
+    17
+   ],
+   "box": {
+    "w": 0.803,
+    "h": 1.181,
+    "x": 0.021,
+    "y": 0.309
+   }
+  },
+  {
+   "id": 54,
+   "key": "SweetcaneProp",
+   "loot": [
+    18
+   ],
+   "box": {
+    "w": 0.915,
+    "h": 0.941,
+    "x": -0.018,
+    "y": 0.346
+   }
+  },
+  {
+   "id": 55,
+   "key": "JellyFishCreatureBodyProp",
+   "loot": [
+    14
+   ],
+   "box": {
+    "w": 0.877,
+    "h": 0.44,
+    "x": -0.0,
+    "y": 0.053
+   }
+  },
+  {
+   "id": 56,
+   "key": "ScortixaBodyProp",
+   "loot": [
+    14
+   ],
+   "box": {
+    "w": 0.842,
+    "h": 0.438,
+    "x": -0.013,
+    "y": 0.077
+   }
+  },
+  {
+   "id": 61,
+   "key": "TestDungeonEntrance",
+   "loot": [
+    5
+   ],
+   "box": {
+    "w": 1.703,
+    "h": 1.589,
+    "x": -0.013,
+    "y": 0.191
+   }
+  },
+  {
+   "id": 63,
+   "key": "SpiderBodyProp",
+   "loot": [
+    0
+   ],
+   "box": {
+    "w": 0.812,
+    "h": 0.352,
+    "x": -0.0,
+    "y": 0.013
+   }
+  },
+  {
+   "id": 64,
+   "key": "MaskedCreatureBodyProp",
+   "loot": [
+    24
+   ],
+   "box": {
+    "w": 0.506,
+    "h": 0.594,
+    "x": 0.001,
+    "y": 0.046
+   }
+  },
+  {
+   "id": 65,
+   "key": "HoodedCreatureBodyProp",
+   "loot": [
+    23
+   ],
+   "box": {
+    "w": 0.506,
+    "h": 0.594,
+    "x": 0.001,
+    "y": 0.046
+   }
+  },
+  {
+   "id": 67,
+   "key": "CaveRockProp01",
+   "loot": [
+    5
+   ],
+   "box": {
+    "w": 0.735,
+    "h": 0.849,
+    "x": -0.007,
+    "y": 0.214
+   }
+  },
+  {
+   "id": 147,
+   "key": "BaseCropBuilding",
+   "loot": [],
+   "box": {
+    "w": 0.965,
+    "h": 0.921,
+    "x": -0.026,
+    "y": 0.382
+   }
+  },
+  {
+   "id": 162,
+   "key": "StretshroomProp",
+   "loot": [
+    164
+   ],
+   "box": {
+    "w": 0.449,
+    "h": 0.561,
+    "x": 0.004,
+    "y": 0.248
+   }
+  },
+  {
+   "id": 178,
+   "key": "MoscaMinionCreatureBodyProp",
+   "loot": [
+    14
+   ],
+   "box": {
+    "w": 0.937,
+    "h": 0.596,
+    "x": 0.009,
+    "y": 0.142
+   }
+  },
+  {
+   "id": 179,
+   "key": "MoschillarBossBodyProp",
+   "loot": [
+    0
+   ],
+   "box": {
+    "w": 2.545,
+    "h": 1.507,
+    "x": 0.243,
+    "y": 0.535
+   }
+  },
+  {
+   "id": 180,
+   "key": "MoscaMinionEggProp",
+   "loot": [],
+   "box": {
+    "w": 0.664,
+    "h": 0.939,
+    "x": 0.007,
+    "y": 0.339
+   }
+  },
+  {
+   "id": 184,
+   "key": "BloodFlowerProp",
+   "loot": [
+    183
+   ],
+   "box": {
+    "w": 0.501,
+    "h": 0.763,
+    "x": -0.02,
+    "y": 0.318
+   }
+  },
+  {
+   "id": 198,
+   "key": "CorniliaFlowerProp",
+   "loot": [
+    197
+   ],
+   "box": {
+    "w": 0.537,
+    "h": 0.805,
+    "x": -0.019,
+    "y": 0.373
+   }
+  },
+  {
+   "id": 203,
+   "key": "RockIronBoulderProp",
+   "loot": [
+    2
+   ],
+   "box": {
+    "w": 1.489,
+    "h": 2.237,
+    "x": 0.019,
+    "y": 0.728
+   }
+  },
+  {
+   "id": 204,
+   "key": "RockCopperBoulderProp",
+   "loot": [
+    9
+   ],
+   "box": {
+    "w": 1.571,
+    "h": 2.263,
+    "x": -0.029,
+    "y": 0.729
+   }
+  },
+  {
+   "id": 221,
+   "key": "QueenBirbeeBodyProp",
+   "loot": [
+    14
+   ],
+   "box": {
+    "w": 1.125,
+    "h": 0.745,
+    "x": -0.018,
+    "y": 0.037
+   }
+  },
+  {
+   "id": 230,
+   "key": "BigTreeProp",
+   "loot": [
+    1143
+   ],
+   "box": {
+    "w": 1.121,
+    "h": 2.563,
+    "x": 0.006,
+    "y": 1.161
+   }
+  },
+  {
+   "id": 246,
+   "key": "CorniliaFlowerPropWild",
+   "loot": [
+    197
+   ],
+   "box": {
+    "w": 0.537,
+    "h": 0.805,
+    "x": -0.019,
+    "y": 0.373
+   }
+  },
+  {
+   "id": 247,
+   "key": "SweetcanePropWild",
+   "loot": [
+    18
+   ],
+   "box": {
+    "w": 0.915,
+    "h": 0.941,
+    "x": -0.018,
+    "y": 0.346
+   }
+  },
+  {
+   "id": 249,
+   "key": "BigTreeProp2",
+   "loot": [],
+   "box": {
+    "w": 1.121,
+    "h": 2.563,
+    "x": 0.006,
+    "y": 1.161
+   }
+  },
+  {
+   "id": 261,
+   "key": "RockBoulderProp",
+   "loot": [
+    5
+   ],
+   "box": {
+    "w": 1.489,
+    "h": 2.237,
+    "x": 0.019,
+    "y": 0.728
+   }
+  },
+  {
+   "id": 266,
+   "key": "SashaShopBuilding",
+   "loot": [
+    12,
+    20
    ]
+  },
+  {
+   "id": 268,
+   "key": "NPCLandingPodCapsule",
+   "loot": [
+    12,
+    20
+   ],
+   "box": {
+    "w": 1.018,
+    "h": 1.006,
+    "x": 0.015,
+    "y": 0.244
+   }
+  },
+  {
+   "id": 294,
+   "key": "DrameleonBossBodyProp",
+   "loot": [
+    0
+   ],
+   "box": {
+    "w": 2.545,
+    "h": 1.507,
+    "x": 0.243,
+    "y": 0.535
+   }
+  },
+  {
+   "id": 298,
+   "key": "EngineerShopBuilding",
+   "loot": [
+    12,
+    20
+   ],
+   "box": {
+    "w": 3.469,
+    "h": 2.092,
+    "x": 0.303,
+    "y": -0.067
+   }
+  },
+  {
+   "id": 308,
+   "key": "BerryBushPropMoschillar",
+   "loot": [
+    141
+   ],
+   "box": {
+    "w": 0.856,
+    "h": 0.715,
+    "x": 0.002,
+    "y": 0.218
+   }
+  },
+  {
+   "id": 321,
+   "key": "BoxStack1Building",
+   "loot": [
+    12,
+    20
+   ],
+   "box": {
+    "w": 1.018,
+    "h": 1.006,
+    "x": 0.015,
+    "y": 0.244
+   }
+  },
+  {
+   "id": 322,
+   "key": "BoxStack2Building",
+   "loot": [
+    12,
+    20
+   ],
+   "box": {
+    "w": 1.018,
+    "h": 1.006,
+    "x": 0.015,
+    "y": 0.244
+   }
+  },
+  {
+   "id": 323,
+   "key": "BoxStack3Building",
+   "loot": [
+    12,
+    20
+   ],
+   "box": {
+    "w": 1.018,
+    "h": 1.006,
+    "x": 0.015,
+    "y": 0.244
+   }
+  },
+  {
+   "id": 335,
+   "key": "TitaniumProp",
+   "loot": [
+    337
+   ],
+   "box": {
+    "w": 1.021,
+    "h": 1.303,
+    "x": 0.004,
+    "y": 0.424
+   }
+  },
+  {
+   "id": 341,
+   "key": "JuicePlant",
+   "loot": [
+    342
+   ],
+   "box": {
+    "w": 0.454,
+    "h": 0.86,
+    "x": -0.003,
+    "y": 0.329
+   }
+  },
+  {
+   "id": 362,
+   "key": "ArabeetleBodyProp",
+   "loot": [
+    337
+   ],
+   "box": {
+    "w": 0.974,
+    "h": 0.764,
+    "x": -0.01,
+    "y": 0.135
+   }
+  },
+  {
+   "id": 364,
+   "key": "JellyFishPinkCreatureBodyProp",
+   "loot": [
+    348
+   ],
+   "box": {
+    "w": 0.877,
+    "h": 0.44,
+    "x": -0.0,
+    "y": 0.053
+   }
+  },
+  {
+   "id": 376,
+   "key": "BigTreeProp2Encampment",
+   "loot": [],
+   "box": {
+    "w": 1.752,
+    "h": 2.434,
+    "x": 0.057,
+    "y": 1.097
+   }
+  },
+  {
+   "id": 377,
+   "key": "BigTreePropEncampment",
+   "loot": [],
+   "box": {
+    "w": 1.121,
+    "h": 2.563,
+    "x": 0.006,
+    "y": 1.161
+   }
+  },
+  {
+   "id": 389,
+   "key": "JuicePlantWild",
+   "loot": [
+    342
+   ],
+   "box": {
+    "w": 0.454,
+    "h": 0.86,
+    "x": -0.003,
+    "y": 0.329
+   }
+  },
+  {
+   "id": 441,
+   "key": "BehemuttiumPropWild",
+   "loot": [
+    0
+   ],
+   "box": {
+    "w": 1.066,
+    "h": 1.322,
+    "x": -0.009,
+    "y": 0.398
+   }
+  },
+  {
+   "id": 447,
+   "key": "WaterPlantTunasaProp",
+   "loot": [],
+   "box": {
+    "w": 0.743,
+    "h": 0.969,
+    "x": 0.017,
+    "y": 0.324
+   }
+  },
+  {
+   "id": 450,
+   "key": "JuicePlantTunasaPuzzle",
+   "loot": [
+    342
+   ],
+   "box": {
+    "w": 0.757,
+    "h": 1.112,
+    "x": 0.011,
+    "y": 0.383
+   }
+  },
+  {
+   "id": 452,
+   "key": "StretshroomBigProp",
+   "loot": [
+    164
+   ],
+   "box": {
+    "w": 1.109,
+    "h": 1.306,
+    "x": 0.003,
+    "y": 0.638
+   }
+  },
+  {
+   "id": 469,
+   "key": "TwigTree",
+   "loot": [
+    468
+   ],
+   "box": {
+    "w": 0.757,
+    "h": 1.112,
+    "x": 0.011,
+    "y": 0.383
+   }
+  },
+  {
+   "id": 507,
+   "key": "TunasaBossBodyProp",
+   "loot": [
+    0
+   ],
+   "box": {
+    "w": 2.545,
+    "h": 1.507,
+    "x": 0.243,
+    "y": 0.535
+   }
+  },
+  {
+   "id": 508,
+   "key": "SandRockMoschillarCocoonProp",
+   "loot": [],
+   "box": {
+    "w": 1.101,
+    "h": 1.65,
+    "x": -0.012,
+    "y": 0.547
+   }
+  },
+  {
+   "id": 513,
+   "key": "AntorkAdultBodyProp",
+   "loot": [
+    14
+   ],
+   "box": {
+    "w": 2.011,
+    "h": 1.15,
+    "x": 0.027,
+    "y": 0.429
+   }
+  },
+  {
+   "id": 518,
+   "key": "BehemuttiumVeinProp",
+   "loot": [
+    0
+   ],
+   "box": {
+    "w": 12.297,
+    "h": 10.193,
+    "x": 0.005,
+    "y": 0.577
+   }
+  },
+  {
+   "id": 833,
+   "key": "DesertWormEventTrigger",
+   "loot": [
+    6
+   ],
+   "box": {
+    "w": 23.921,
+    "h": 18.389,
+    "x": 6.613,
+    "y": 6.272
+   }
+  },
+  {
+   "id": 834,
+   "key": "PoopProp (4)",
+   "loot": [
+    149
+   ],
+   "box": {
+    "w": 0.707,
+    "h": 0.887,
+    "x": -0.008,
+    "y": 0.205
+   }
+  },
+  {
+   "id": 839,
+   "key": "SpaceWalkAsteroid1",
+   "loot": [],
+   "box": {
+    "w": 1.288,
+    "h": 1.229,
+    "x": 0.008,
+    "y": -0.015
+   }
+  },
+  {
+   "id": 840,
+   "key": "SpacewalkCarbonRock",
+   "loot": [],
+   "box": {
+    "w": 1.188,
+    "h": 1.294,
+    "x": -0.011,
+    "y": -0.006
+   }
+  },
+  {
+   "id": 844,
+   "key": "EmiliaHouseBuilding",
+   "loot": [
+    12,
+    20
+   ],
+   "box": {
+    "w": 4.054,
+    "h": 2.344,
+    "x": -0.753,
+    "y": -0.425
+   }
+  },
+  {
+   "id": 846,
+   "key": "ArmandoShopBuilding",
+   "loot": [
+    12,
+    20
+   ],
+   "box": {
+    "w": 2.921,
+    "h": 2.399,
+    "x": -0.065,
+    "y": -0.453
+   }
+  },
+  {
+   "id": 847,
+   "key": "SandBoulderProp",
+   "loot": [
+    17
+   ],
+   "box": {
+    "w": 1.637,
+    "h": 2.282,
+    "x": -0.006,
+    "y": 0.662
+   }
+  },
+  {
+   "id": 851,
+   "key": "SpaceWalkAsteroidIndestructible",
+   "loot": [],
+   "box": {
+    "w": 2.635,
+    "h": 2.397,
+    "x": -0.0,
+    "y": -0.011
+   }
+  },
+  {
+   "id": 859,
+   "key": "BloodFlowerMutantProp",
+   "loot": [
+    860
+   ],
+   "box": {
+    "w": 0.501,
+    "h": 0.763,
+    "x": -0.02,
+    "y": 0.318
+   }
+  },
+  {
+   "id": 891,
+   "key": "SpacewalkSilverRock",
+   "loot": [],
+   "box": {
+    "w": 1.341,
+    "h": 1.288,
+    "x": 0.033,
+    "y": -0.009
+   }
+  },
+  {
+   "id": 892,
+   "key": "SpacewalkPlatinumRock",
+   "loot": [],
+   "box": {
+    "w": 0.741,
+    "h": 0.788,
+    "x": 0.011,
+    "y": -0.009
+   }
+  },
+  {
+   "id": 920,
+   "key": "SpacewalkSapphireRock",
+   "loot": [],
+   "box": {
+    "w": 0.821,
+    "h": 0.742,
+    "x": -0.013,
+    "y": 0.004
+   }
+  },
+  {
+   "id": 921,
+   "key": "SpacewalkRubyRock",
+   "loot": [],
+   "box": {
+    "w": 0.815,
+    "h": 0.772,
+    "x": -0.007,
+    "y": 0.032
+   }
+  },
+  {
+   "id": 922,
+   "key": "SpacewalkEmeraldRock",
+   "loot": [],
+   "box": {
+    "w": 0.83,
+    "h": 0.736,
+    "x": -0.009,
+    "y": 0.007
+   }
+  },
+  {
+   "id": 923,
+   "key": "SpacewalkDiamondRock",
+   "loot": [],
+   "box": {
+    "w": 0.818,
+    "h": 0.777,
+    "x": 0.006,
+    "y": -0.013
+   }
+  },
+  {
+   "id": 924,
+   "key": "SpaceWalkAsteroid2",
+   "loot": [],
+   "box": {
+    "w": 1.288,
+    "h": 1.229,
+    "x": 0.008,
+    "y": -0.015
+   }
+  },
+  {
+   "id": 925,
+   "key": "SpaceWalkAsteroid3",
+   "loot": [],
+   "box": {
+    "w": 1.288,
+    "h": 1.229,
+    "x": 0.008,
+    "y": -0.015
+   }
+  },
+  {
+   "id": 933,
+   "key": "SpaceWalkAsteroidCirclingExtraction1",
+   "loot": [],
+   "box": {
+    "w": 2.102,
+    "h": 2.026,
+    "x": -0.005,
+    "y": -0.015
+   }
+  },
+  {
+   "id": 934,
+   "key": "SpaceWalkAsteroidCirclingExtraction2",
+   "loot": [],
+   "box": {
+    "w": 3.926,
+    "h": 4.135,
+    "x": -0.023,
+    "y": -0.002
+   }
+  },
+  {
+   "id": 935,
+   "key": "SpaceWalkAsteroidCirclingExtraction3",
+   "loot": [],
+   "box": {
+    "w": 5.229,
+    "h": 4.978,
+    "x": -0.068,
+    "y": 0.052
+   }
+  },
+  {
+   "id": 936,
+   "key": "MeteorDiamondProp",
+   "loot": [
+    902
+   ],
+   "box": {
+    "w": 0.707,
+    "h": 0.887,
+    "x": -0.008,
+    "y": 0.205
+   }
+  },
+  {
+   "id": 937,
+   "key": "MeteorEmeraldProp",
+   "loot": [
+    903
+   ],
+   "box": {
+    "w": 0.707,
+    "h": 0.887,
+    "x": -0.008,
+    "y": 0.205
+   }
+  },
+  {
+   "id": 938,
+   "key": "MeteorRubyProp",
+   "loot": [
+    906
+   ],
+   "box": {
+    "w": 0.707,
+    "h": 0.887,
+    "x": -0.008,
+    "y": 0.205
+   }
+  },
+  {
+   "id": 939,
+   "key": "MeteorSapphireProp",
+   "loot": [
+    907
+   ],
+   "box": {
+    "w": 0.707,
+    "h": 0.887,
+    "x": -0.008,
+    "y": 0.205
+   }
+  },
+  {
+   "id": 955,
+   "key": "SpacewalkObsidianRock",
+   "loot": [],
+   "box": {
+    "w": 1.123,
+    "h": 1.115,
+    "x": -0.027,
+    "y": 0.014
+   }
+  },
+  {
+   "id": 1137,
+   "key": "CorniliaTree",
+   "loot": [
+    1133
+   ],
+   "box": {
+    "w": 0.995,
+    "h": 1.389,
+    "x": -0.015,
+    "y": 0.526
+   }
+  },
+  {
+   "id": 1138,
+   "key": "SweetPalmTree",
+   "loot": [
+    1134
+   ],
+   "box": {
+    "w": 1.594,
+    "h": 1.836,
+    "x": -0.027,
+    "y": 0.701
+   }
+  },
+  {
+   "id": 1219,
+   "key": "SlimeOilFont",
+   "loot": [],
+   "box": {
+    "w": 0.753,
+    "h": 1.21,
+    "x": -0.004,
+    "y": 0.42
+   }
+  },
+  {
+   "id": 1287,
+   "key": "BehemuttiumVeinDestroyedProp",
+   "loot": [
+    0
+   ],
+   "box": {
+    "w": 13.633,
+    "h": 10.968,
+    "x": -0.277,
+    "y": 0.19
+   }
   }
  ],
  "creatures": [

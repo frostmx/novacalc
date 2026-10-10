@@ -3,8 +3,9 @@
 Usage: python extract_icons.py "<Nova Lands install dir>" <raw_dir> <out_dir>
 
 Writes <out_dir>/icons.png (CELL×CELL cells, COLS per row) and <out_dir>/icons.json:
-{"cell": CELL, "cols": COLS, "items": {resourceId: index}, "buildings": {buildingId: index}}.
-Items use their `sprite`; buildings their UI icon (`uiIcon` SpriteRenderer), falling back to the world `sprite`.
+{"cell": CELL, "cols": COLS, "items": {resourceId: index}, "buildings": {buildingId: index}, "props": {buildingId: index}}.
+Items use their `sprite`; buildings their UI icon (`uiIcon` SpriteRenderer), falling back to the world `sprite`;
+props (rocks, bushes, trees) their world `sprite`.
 Every building in data/gamedata.json gets an icon when it has a sprite.
 """
 import glob
@@ -22,9 +23,10 @@ COLS = 16
 def main(root, raw_dir, out_dir):
     gamedata = json.load(open(os.path.join(out_dir, "gamedata.json"), encoding="utf-8"))
     wanted_buildings = {b["id"] for b in gamedata["buildings"]}  # all: the architect shows every placed building
+    wanted_props = {p["id"] for p in gamedata.get("props", [])}
 
     # which sprite / renderer each item and building points to ("file:pathId")
-    item_refs, building_refs = {}, {}
+    item_refs, building_refs, prop_refs = {}, {}, {}
     for f in glob.glob(os.path.join(raw_dir, "cls_*.json")):
         for o in json.load(open(f, encoding="utf-8")):
             if "resourceId" in o and o.get("sprite"):
@@ -33,8 +35,12 @@ def main(root, raw_dir, out_dir):
                 refs = [r for r in (o.get("uiIcon"), o.get("sprite")) if r]
                 if refs:
                     building_refs.setdefault(o["buildingId"], refs)
+            if o.get("buildingId") in wanted_props and o.get("isProp"):
+                refs = [r for r in (o.get("sprite"), o.get("uiIcon")) if r]
+                if refs:
+                    prop_refs.setdefault(o["buildingId"], refs)
 
-    needed = set(item_refs.values()) | {r for refs in building_refs.values() for r in refs}
+    needed = set(item_refs.values()) | {r for refs in (*building_refs.values(), *prop_refs.values()) for r in refs}
     env = UnityPy.load(os.path.join(root, "Nova Lands_Data"))
     objs = {}
     for obj in env.objects:
@@ -70,8 +76,9 @@ def main(root, raw_dir, out_dir):
         cell.paste(img, ((CELL - img.width) // 2, (CELL - img.height) // 2), img)
         return cell
 
-    cells, index = [], {"items": {}, "buildings": {}}
-    for kind, refs_by_id in (("items", {k: [v] for k, v in item_refs.items()}), ("buildings", building_refs)):
+    cells, index = [], {"items": {}, "buildings": {}, "props": {}}
+    for kind, refs_by_id in (("items", {k: [v] for k, v in item_refs.items()}), ("buildings", building_refs),
+                             ("props", prop_refs)):
         for oid, refs in sorted(refs_by_id.items()):
             img = next((im for im in map(sprite_image, refs) if im is not None), None)
             if img is None:
@@ -87,7 +94,7 @@ def main(root, raw_dir, out_dir):
     with open(os.path.join(out_dir, "icons.json"), "w", encoding="utf-8") as f:
         json.dump({"cell": CELL, "cols": COLS, **index}, f)
     missing_items = sorted(set(i["id"] for i in gamedata["items"]) - set(index["items"]))
-    print(f"{len(index['items'])} item icons, {len(index['buildings'])} building icons -> {atlas.size}; "
+    print(f"{len(index['items'])} item icons, {len(index['buildings'])} building icons, {len(index['props'])} prop icons -> {atlas.size}; "
           f"items without icon: {missing_items}; buildings without icon: {sorted(wanted_buildings - set(index['buildings']))}")
 
 

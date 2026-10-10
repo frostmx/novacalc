@@ -50,7 +50,7 @@ function parseTree(bytes) {
 
 // ---------- bzip2 ----------
 // Minimal decoder (no CRC check): Huffman + MTF/RLE2 + inverse BWT + RLE1, per the bzip2 format.
-function bunzip2(src) {
+export function bunzip2(src) {
   let pos = 0;
   let bitBuf = 0;
   let bitCount = 0;
@@ -280,19 +280,24 @@ export function readFactory(save) {
 }
 
 /**
- * Every island and every placed building (world positions), for the architect view.
- * Islands: { id, biome, x, y (centre), locked, outOfMap }; buildings: { uid, buildingId, x, y, islandId, twin? }.
- * The Advanced Farm's inner plots are part of their farm and are left out.
+ * Every island, every placed building and every prop (world positions), for the architect view.
+ * Islands: { id, biome, x, y (centre), locked, premade, outOfMap }; buildings: { uid, buildingId, x, y, islandId,
+ * twin?, item? }; props: { uid, propId, x, y, islandId } (rocks, bushes, trees, …; planted crops are left out —
+ * they belong to their farm plot). The Advanced Farm's inner plots are part of their farm and are left out too.
  */
 export function readLayout(save) {
   const islands = [];
   const buildings = [];
+  const props = [];
   for (const layer of Object.values(save.World?.World ?? {})) {
     for (const area of layer) {
       islands.push({
         id: area.Id, biome: area.Biome ?? '', x: area.X ?? 0, y: area.Y ?? 0,
-        locked: area.Locked === 'True', outOfMap: area.OutOfMap === 'True',
+        locked: area.Locked === 'True', premade: area.Premade === 'True', outOfMap: area.OutOfMap === 'True',
       });
+      for (const p of area.Props ?? []) {
+        if (!p.HasOwnerFarmPlot) props.push({ uid: p.Id, propId: p.BuildingId, x: p.X ?? 0, y: p.Y ?? 0, islandId: area.Id });
+      }
       for (const b of area.Buildings ?? []) {
         if (b.IsInnerFarmPlot === 'True') continue;
         buildings.push({
@@ -303,5 +308,5 @@ export function readLayout(save) {
       }
     }
   }
-  return { islands, buildings };
+  return { islands, buildings, props };
 }

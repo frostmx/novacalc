@@ -2,10 +2,12 @@ import { loadLocale, tk, applyStaticTexts } from './i18n.js';
 import { loadData } from './data.js';
 import { compute, nodeSpeed, portStatus, outputAmount, outputBonus, isWatered, EPS } from './calc.js';
 import { decodeSave, readProfile, readFactory, readLayout } from './save.js';
-import { hexAt, hexCenter, hexSlots, TRANSPORTER_SLOTS, slotPair, slotAt } from './world.js';
+import { hexAt, hexCenter, hexSlots, TRANSPORTER_SLOTS, slotPair, slotAt, footprintOf } from './world.js';
 import { createArch } from './arch.js';
+import { readTree, writeTree, applyLayout, editableBuilding } from './savewrite.js';
 
 const STORAGE_KEY = 'novacalc.board.v1';
+const SAVE_KEY = 'novacalc.save.v1'; // the imported save file itself ({ file, text }), for writing it back
 const UNIT_FACTOR = { s: 1 / 60, min: 1, h: 60 };
 const NODE_W = 300;
 const GAP_X = 90;
@@ -20,7 +22,7 @@ const el = {
   arch: $('arch'), archHexes: $('arch-hexes'), archLabels: $('arch-labels'), archBlds: $('arch-blds'),
   archLinks: $('arch-links'), archCard: $('arch-card'),
   modeCalc: $('mode-calc'), modeArch: $('mode-arch'), viewIslands: $('view-islands'), viewChain: $('view-chain'),
-  boardTools: $('board-tools'),
+  boardTools: $('board-tools'), saveOut: $('btn-save-out'),
 };
 
 let db;
@@ -66,12 +68,16 @@ function fmtTime(sec) {
 // placed = buildings standing on islands { id, b, g, x, y (relative to the island centre, world units), node? }:
 // with `node` an instance of that card (at most node.count of them), without it non-production (storage, …).
 // Transporter arms also have `slot` (shore slot index) and `twin` (the placed id of the arm on the facing island);
-// the input arm keeps the carried `item`.
+// the input arm keeps the carried `item`. Buildings from a save keep its id as `uid`; `fixed` ones (NPCs, shops,
+// landmarks, anything on a premade island) cannot be moved or deleted.
+// props = rocks, bushes, trees of a save { id, uid, b (prop id), g, x, y }; they can be moved, buildings can't cover them.
+// saveInfo = the imported save { file, name, day, hash, types (building ids it has a record of) }: with it the
+// architect's layout can be written back into that save (savewrite.js).
 
 const emptyMods = () => ({ skills: [], gems: [] });
 const emptyState = () => ({
   version: 1, unit: 'min', view: { x: 40, y: 40, z: 1 }, nodes: [], edges: [], mods: emptyMods(), groups: {},
-  mode: 'calc', archView: null, placed: [],
+  mode: 'calc', archView: null, placed: [], props: [], saveInfo: null,
   // calculator view: cards grouped in island frames, or one chain; each keeps its own card positions
   boardView: 'islands', layouts: {},
 });
@@ -95,10 +101,12 @@ function setState(s) {
   state.mods = { ...emptyMods(), ...state.mods };
   state.groups = state.groups ?? {};
   state.placed = Array.isArray(state.placed) ? state.placed.filter(p => db.buildings.has(p.b)) : [];
+  state.props = Array.isArray(state.props) ? state.props.filter(p => db.props.has(p.b)) : [];
+  if (state.saveInfo && storedSave()?.hash !== state.saveInfo.hash) state.saveInfo = null; // that save is gone
   if (!state.archView) { state.archView = { x: 40, y: 40, z: 0.3 }; archNeedsFit = true; }
   // drop nodes whose building/recipe no longer exist in the data
   state.nodes = state.nodes.filter(n => isGoal(n) || (db.buildings.has(n.b) && db.recipes.has(n.r)));
-  const ids = [...state.nodes, ...state.edges, ...state.placed, ...Object.keys(state.groups).map(id => ({ id }))]
+  const ids = [...state.nodes, ...state.edges, ...state.placed, ...state.props, ...Object.keys(state.groups).map(id => ({ id }))]
     .map(x => parseInt(String(x.id).slice(1), 10)).filter(Number.isFinite);
   nextId = (ids.length ? Math.max(...ids) : 0) + 1;
   pruneEdges();
@@ -153,6 +161,8 @@ function render() {
   }
   renderSummary();
   renderModsButton();
+  el.saveOut.hidden = !state.saveInfo;
+  if (state.saveInfo) el.saveOut.title = tk('UI_SAVE_OUT_TITLE', state.saveInfo.file);
   el.hint.textContent = tk(arch ? 'UI_ARCH_HINT' : 'UI_EMPTY_HINT');
   el.hint.hidden = arch ? Object.values(state.groups).some(g => g.q != null) : state.nodes.length > 0;
 }
@@ -506,6 +516,10 @@ function renderBoardCatalog() {
 }
 
 /** Architect catalog: cards with buildings still to place, production entries, infrastructure. */
+/** With a save loaded, only building types it has a record of can be placed (a new one is a copy of such a record). */
+const placeable = bId => !state.saveInfo || state.saveInfo.types.includes(bId);
+const noTemplate = bId => (placeable(bId) ? '' : ` disabled title="${esc(tk('UI_SAVE_NO_TEMPLATE'))}"`);
+
 function renderArchCatalog() {
   const q = el.search.value.trim().toLowerCase();
   const has = text => !q || text.toLowerCase().includes(q);
@@ -518,7 +532,7 @@ function renderArchCatalog() {
   }).filter(x => has(x.text));
   if (open.length) {
     html += `<details data-key="unplaced"${openAttr('unplaced', true)}><summary><span>${esc(tk('UI_ARCH_UNPLACED'))}</span><span class="count">${open.reduce((k, x) => k + unplacedCount(x.n.id), 0)}</span></summary>
-      ${open.map(x => `<button class="entry" data-node="${esc(x.n.id)}">
+      ${open.map(x => `<button class="entry" data-node="${esc(x.n.id)}"${noTemplate(x.b.id)}>
         <span class="bld">${esc(x.where ?? '')}</span>
         <span class="out">${iconHtml('buildings', x.b.id)}${esc(db.buildingName(x.b))} ×${unplacedCount(x.n.id)}</span>
         <span class="in">${esc(x.e ? db.entryLabel(x.e) : '')}</span></button>`).join('')}</details>`;
@@ -527,12 +541,12 @@ function renderArchCatalog() {
     const list = (db.entriesByBuilding.get(b.id) ?? []).filter(e => has(`${db.buildingName(e.b)} ${db.entryLabel(e)} ${db.stackText(e.r.inputs)}`));
     if (!list.length) continue;
     html += `<details data-key="b${b.id}"${openAttr(`b${b.id}`)}><summary><span>${iconHtml('buildings', b.id, 22)}${esc(db.buildingName(b))}</span><span class="count">${list.length}</span></summary>
-      ${list.map(e => entryButton(e, false)).join('')}</details>`;
+      ${list.map(e => entryButton(e, false, noTemplate(b.id))).join('')}</details>`;
   }
   const infra = db.infraBuildings.filter(b => has(db.buildingName(b)));
   if (infra.length) {
     html += `<details data-key="infra"${openAttr('infra')}><summary><span>${esc(tk('UI_ARCH_INFRA'))}</span><span class="count">${infra.length}</span></summary>
-      ${infra.map(b => `<button class="entry" data-infra="${b.id}"><span class="out">${iconHtml('buildings', b.id)}${esc(db.buildingName(b))}</span></button>`).join('')}</details>`;
+      ${infra.map(b => `<button class="entry" data-infra="${b.id}"${noTemplate(b.id)}><span class="out">${iconHtml('buildings', b.id)}${esc(db.buildingName(b))}</span></button>`).join('')}</details>`;
   }
   el.catalog.innerHTML = html || `<p class="empty">${esc(tk('UI_NOTHING_FOUND'))}</p>`;
   markArmed(archView?.armed());
@@ -548,9 +562,9 @@ function markArmed(a) {
   }
 }
 
-function entryButton(e, withBuilding) {
+function entryButton(e, withBuilding, attrs = '') {
   const ins = e.r.inputs.length ? db.stackText(e.r.inputs) : '';
-  return `<button class="entry" data-b="${e.b.id}" data-r="${esc(e.r.id)}" data-c="${e.creature?.key ?? ''}">
+  return `<button class="entry" data-b="${e.b.id}" data-r="${esc(e.r.id)}" data-c="${e.creature?.key ?? ''}"${attrs}>
     ${withBuilding ? `<span class="bld">${esc(db.buildingName(e.b))}</span>` : ''}
     <span class="out">${e.r.outputs[0] ? iconHtml('items', e.r.outputs[0].item) : '⚡'}${esc(db.entryLabel(e))}</span>
     <span class="in">${ins ? `${esc(ins)} · ` : ''}${esc(e.r.gen ? '' : fmtTime(e.r.time / nodeSpeed({ creatures: 1 }, e.b, db, state.mods)))}</span>
@@ -760,6 +774,7 @@ function linkNode(n) {
 /** Architect: start placing the not yet placed buildings of a card. */
 function armCard(id) {
   const n = findNode(id);
+  if (n && !placeable(n.b)) { toast(tk('UI_SAVE_NO_TEMPLATE'), true); return; }
   if (n && unplacedCount(id) > 0) archView.arm({ b: db.buildings.get(n.b), node: id });
 }
 
@@ -862,6 +877,13 @@ const placeOps = {
     }
     commit();
     renderCatalog();
+  },
+  /** A rock / bush / tree moved on its island. */
+  moveProp(id, x, y) {
+    const p = state.props.find(q => q.id === id);
+    if (!p) return;
+    Object.assign(p, { x, y });
+    commit();
   },
   unplacedCount,
   newIsland: (screen, slot) => openBiomeMenu(screen, biome => createIsland(biome, slot)),
@@ -1405,6 +1427,8 @@ $('btn-clear').addEventListener('click', () => {
   state.edges = [];
   state.groups = {};
   state.placed = [];
+  state.props = [];
+  state.saveInfo = null;
   state.layouts = {};
   selection = null;
   commit();
@@ -1645,7 +1669,11 @@ const fine = v => Math.round(v * 4096) / 4096;
 /** A building of the save as a placed building (position relative to its island's centre). */
 function placedFromSave(rec, g, groups, node) {
   const c = hexCenter(groups[g].q, groups[g].r);
-  return { id: newId('p'), b: rec.buildingId, g, x: fine(rec.x - c.x), y: fine(rec.y - c.y), ...(node ? { node } : {}) };
+  const fixed = groups[g].premade || !editableBuilding(db.buildings.get(rec.buildingId));
+  return {
+    id: newId('p'), uid: rec.uid, b: rec.buildingId, g, x: fine(rec.x - c.x), y: fine(rec.y - c.y),
+    ...(node ? { node } : {}), ...(fixed ? { fixed: true } : {}),
+  };
 }
 
 /** Islands of the save (not the out-of-map border) with their hex slot; titles from the biome ("Grass Island #2"). */
@@ -1658,7 +1686,10 @@ function islandGroups(islands) {
     const k = (seen.get(base) ?? 0) + 1;
     seen.set(base, k);
     const { q, r } = hexAt(isl.x, isl.y);
-    groups[`i${isl.id}`] = { title: k > 1 ? `${base} #${k}` : base, biome: isl.biome, q, r, ...(isl.locked ? { locked: true } : {}) };
+    groups[`i${isl.id}`] = {
+      title: k > 1 ? `${base} #${k}` : base, biome: isl.biome, q, r,
+      ...(isl.locked ? { locked: true } : {}), ...(isl.premade ? { premade: true } : {}),
+    };
   }
   return groups;
 }
@@ -1805,7 +1836,8 @@ $('factory-file').addEventListener('change', async ev => {
   ev.target.value = '';
   if (!file) return;
   try {
-    const save = decodeSave(new Uint8Array(await file.arrayBuffer()));
+    const text = await file.text();
+    const save = decodeSave(text);
     if (state.nodes.length && !confirm(tk('UI_FACTORY_REPLACE'))) return;
     nextId = 1;
     const profile = readProfile(save, db.gemBuildingId);
@@ -1834,11 +1866,24 @@ $('factory-file').addEventListener('change', async ev => {
       if (t) p.twin = t.id;
       delete p.twinUid;
     }
+    const props = [];
+    for (const pr of layout.props) {
+      const g = `i${pr.islandId}`;
+      if (!groups[g] || !db.props.has(pr.propId)) continue;
+      const c = hexCenter(groups[g].q, groups[g].r);
+      props.push({ id: newId('r'), uid: pr.uid, b: pr.propId, g, x: fine(pr.x - c.x), y: fine(pr.y - c.y) });
+    }
+    const hash = storeSave(file.name, text);
     const edges = linkAll(nodes, groups, placed);
     state.nodes = nodes;
     state.edges = edges;
     state.groups = groups;
     state.placed = placed;
+    state.props = props;
+    state.saveInfo = hash ? {
+      file: file.name, name: profile.name, day: profile.day, hash,
+      types: [...new Set(layout.buildings.map(b => b.buildingId))],
+    } : null;
     state.layouts = {};
     arrangeBoard();
     selection = null;
@@ -1848,6 +1893,53 @@ $('factory-file').addEventListener('change', async ev => {
     if (state.mode === 'arch') archView.fit(); else fitView();
     toast(tk('UI_FACTORY_DONE', profile.name ?? file.name, profile.day ?? '?', total, new Set(nodes.map(n => n.g)).size,
       nodes.length, state.edges.length, skipped, manual));
+  } catch (err) {
+    console.error(err);
+    toast(tk('UI_SAVE_ERROR', err.message), true);
+  }
+});
+
+// ---------- writing the layout back into the save ----------
+
+/** FNV-1a of a string, to tell whether the stored save is the one the board came from. */
+function textHash(text) {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < text.length; i++) h = Math.imul(h ^ text.charCodeAt(i), 0x01000193);
+  return (h >>> 0).toString(16) + text.length.toString(16);
+}
+
+/** Keep the imported save (browser storage) for writing it back; returns its hash or null when it doesn't fit. */
+function storeSave(file, text) {
+  const hash = textHash(text);
+  try { localStorage.setItem(SAVE_KEY, JSON.stringify({ file, text, hash })); } catch { return null; }
+  return hash;
+}
+function storedSave() {
+  try { return JSON.parse(localStorage.getItem(SAVE_KEY)); } catch { return null; }
+}
+
+el.saveOut.addEventListener('click', () => {
+  const stored = storedSave();
+  if (!state.saveInfo || stored?.hash !== state.saveInfo.hash) { toast(tk('UI_SAVE_OUT_MISSING'), true); return; }
+  try {
+    const root = readTree(stored.text);
+    const sum = applyLayout(root, {
+      placed: state.placed, props: state.props, nodes: state.nodes, groups: state.groups,
+      db: { buildings: db.buildings, footprintOf }, hexAt,
+    });
+    const unplaced = state.nodes.reduce((k, n) => k + unplacedCount(n.id), 0);
+    const skipped = sum.skipped.length;
+    const changes = sum.moved + sum.transferred + sum.added + sum.deleted + sum.recipes + sum.items + sum.props;
+    if (!changes) { toast(tk('UI_SAVE_OUT_NOTHING')); return; }
+    if (!confirm(tk('UI_SAVE_OUT_CONFIRM', stored.file, sum.added, sum.moved, sum.transferred, sum.deleted, sum.recipes,
+      sum.items, sum.props, unplaced, skipped))) return;
+    const blob = new Blob([writeTree(root)], { type: 'application/octet-stream' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = stored.file;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    toast(tk('UI_SAVE_OUT_DONE', stored.file));
   } catch (err) {
     console.error(err);
     toast(tk('UI_SAVE_ERROR', err.message), true);

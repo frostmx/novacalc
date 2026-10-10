@@ -11,6 +11,8 @@ EXTRA) is written to <out_dir>/cls_<Class>.json with PPtrs resolved to
 A building's footprint is its `placementCollider` (a BoxCollider2D on a child GameObject); it is attached to
 the dumped object as `_placement` = {size, offset, position}: collider size/offset plus the collider object's
 position relative to the building (summed local positions up the Transform chain).
+Objects without one (props: rocks, bushes, trees, NPCs) get `_colliders` instead: every 2D collider of
+their GameObject and its children, as {kind, size, offset, position, trigger}.
 """
 import collections
 import json
@@ -90,17 +92,21 @@ def main(root, out):
     res, errs, go_names = collections.defaultdict(list), collections.Counter(), {}
     colliders, transforms = {}, {}  # collider key -> fields; GameObject key -> (localPosition, localScale, parent go)
     tr_by_key = {}
+    colliders_by_go = collections.defaultdict(list)
     for obj in env.objects:
         if obj.type.name in COLLIDERS:
             try:
-                colliders[f"{obj.assets_file.name}:{obj.path_id}"] = (obj.type.name, resolve(obj.read_typetree(), obj.assets_file))
+                ck = f"{obj.assets_file.name}:{obj.path_id}"
+                colliders[ck] = (obj.type.name, resolve(obj.read_typetree(), obj.assets_file))
+                colliders_by_go[colliders[ck][1].get("m_GameObject")].append(ck)
             except Exception:
                 pass
             continue
         if obj.type.name == "Transform":
             try:
                 t = resolve(obj.read_typetree(), obj.assets_file)
-                tr_by_key[f"{obj.assets_file.name}:{obj.path_id}"] = t
+                t["_key"] = f"{obj.assets_file.name}:{obj.path_id}"
+                tr_by_key[t["_key"]] = t
                 transforms[t["m_GameObject"]] = t
             except Exception:
                 pass
@@ -137,16 +143,22 @@ def main(root, out):
         t["_key"], t["_class"] = f"{obj.assets_file.name}:{obj.path_id}", full
         res[full].append(t)
 
-    def placement(it):
-        kind, c = colliders.get(it.get("placementCollider"), (None, None))
+    def placement(it, key=None):
+        kind, c = colliders.get(key or it.get("placementCollider"), (None, None))
         if not c:
             return None
-        if kind == "BoxCollider2D":
+        off = [c["m_Offset"]["x"], c["m_Offset"]["y"]]
+        if kind in ("BoxCollider2D", "CapsuleCollider2D"):
             size = [c["m_Size"]["x"], c["m_Size"]["y"]]
         elif kind == "CircleCollider2D":
             size = [2 * c["m_Radius"], 2 * c["m_Radius"]]
-        else:
-            return {"kind": kind}
+        else:  # polygon: bounding box of its paths
+            pts = [p for path in c.get("m_Points", {}).get("m_Paths", []) for p in path]
+            if not pts:
+                return {"kind": kind}
+            xs, ys = [p["x"] for p in pts], [p["y"] for p in pts]
+            size = [max(xs) - min(xs), max(ys) - min(ys)]
+            off = [off[0] + (max(xs) + min(xs)) / 2, off[1] + (max(ys) + min(ys)) / 2]
         # collider object position relative to the building root (rotation ignored)
         pos, t = [0.0, 0.0], transforms.get(c["m_GameObject"])
         root = it.get("m_GameObject")
@@ -157,7 +169,27 @@ def main(root, out):
             size = [size[0] * abs(sc["x"]), size[1] * abs(sc["y"])]
             pos = [pos[0] * sc["x"] + t["m_LocalPosition"]["x"], pos[1] * sc["y"] + t["m_LocalPosition"]["y"]]
             t = tr_by_key.get(t["m_Father"])
-        return {"kind": kind, "size": size, "offset": [c["m_Offset"]["x"], c["m_Offset"]["y"]], "position": pos}
+        return {"kind": kind, "size": size, "offset": off, "position": pos,
+                "trigger": bool(c.get("m_IsTrigger"))}
+
+    children = collections.defaultdict(list)  # transform key -> child transforms
+    for t in tr_by_key.values():
+        if t.get("m_Father"):
+            children[t["m_Father"]].append(t)
+
+    def subtree_colliders(it):
+        root = transforms.get(it.get("m_GameObject"))
+        if not root:
+            return []
+        out, todo = [], [root]
+        while todo:
+            t = todo.pop()
+            for ck in colliders_by_go.get(t["m_GameObject"], []):
+                p = placement(it, ck)
+                if p and "size" in p:
+                    out.append(p)
+            todo.extend(children.get(t["_key"], []))
+        return out
 
     for cls, items in res.items():
         for it in items:
@@ -165,6 +197,8 @@ def main(root, out):
                 it["_goName"] = go_names.get(it["m_GameObject"])
             if it.get("placementCollider"):
                 it["_placement"] = placement(it)
+            elif "buildingId" in it:
+                it["_colliders"] = subtree_colliders(it)
         with open(os.path.join(out, f"cls_{cls}.json"), "w", encoding="utf-8") as f:
             json.dump(items, f, ensure_ascii=False, indent=1, default=str)
     print(f"dumped {sum(map(len, res.values()))} objects in {len(res)} classes")

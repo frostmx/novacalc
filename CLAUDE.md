@@ -32,6 +32,8 @@ app/            the calculator (served as-is)
   calc.js       pure math: speed, ports, flow allocation, totals (no DOM)
   data.js       loads data/gamedata.json, builds lookups: entries, producers/consumers, names, presets
   save.js       save decoding (base64 → bzip2 → tree), own bzip2 decoder; readProfile / readFactory / readLayout
+  savewrite.js  lossless save tree (readTree/writeTree) + applyLayout: the architect's layout into the save
+  bzip2.js      bzip2 compressor (cyclic BWT by prefix doubling, one Huffman table; CRCs as SharpZipLib checks)
   i18n.js       t()/tk()/plain(), static texts via data-i18n attributes
   locale/en.json   UI strings (UI_* keys)
 data/
@@ -45,7 +47,7 @@ tools/
   il2cpp_class.py  list a class's methods (+RVA) from Il2CppDumper dump.cs
   item_tiers.py    item progression levels (research graph) → mods/BaseStock/ItemTiers.cs
   il2cpp_dis.py    annotated x64 disassembly of IL2CPP methods (field/method names, float constants)
-  extract_icons.py item + building sprites → data/icons.png atlas (64px cells, 16 per row) + data/icons.json
+  extract_icons.py item + building + prop sprites → data/icons.png atlas (64px cells, 16 per row) + data/icons.json
 ```
 
 ## Game mod (mods/BaseStock)
@@ -106,6 +108,13 @@ Container content = `BaseContainer.popup` → `BaseContainerPopup.inventory.GetI
 - Calculator view (`state.boardView`): 'islands' (frames, `layoutIslands`) or 'chain' (one layered chain,
   `layoutBoard`, cards show their island); positions are kept per view in `state.layouts[view]` and swapped by
   `setBoardView` (first visit / "Arrange" = `arrangeBoard`). Island membership changes only in the island view.
+- Save editor: import keeps the save file in localStorage (`novacalc.save.v1` {file, text, hash}) and
+  `state.saveInfo` {file, name, day, hash, types}; placed buildings keep the save id (`uid`), `fixed` = NPCs/landmarks/
+  premade islands (select only). `state.props` = rocks/bushes/trees (not planted crops) — draggable on their island,
+  buildings can't cover them (box = collider bounds). With a save, the architect catalog only offers types the save has
+  a record of (`saveInfo.types`, option (a): a new building is a copy of such a record). "Download save" =
+  `applyLayout` on the stored save → confirm summary → download under the same file name (we never write to disk).
+  Only islands of the save on their own hex, not premade/locked, are written; placed instances only (not "not placed").
 - Board islands: "+ Island" makes an empty frame; dropping a card into a frame (smallest one wins) moves it to that
   island, anywhere else it stays on its island (the frame grows); Alt+drop outside every frame takes it off; × deletes an island (cards stay), double click renames.
 
@@ -146,6 +155,9 @@ python tools/extract_icons.py "<game dir>" data/raw data     # needs gamedata.js
 - `creatures` (barn recipes per species), `crops` (seed → plant → harvest), `constants.waterBall`,
   `constants.island` (radius, grid cell)
 - building `footprint {w, h, x, y}` (placementCollider box, centre relative to the position) and `placementOffset`;
+  `movable` = the game's `canBeMoved`
+- `props` (isProp objects: rocks, bushes, trees, ores): `box` = bounds of their non-trigger colliders (physics capsule +
+  sprite-sized click polygon, `_colliders` in raw dumps), `loot` item ids
   `biomeColors` (biome → ground / border colour)
 - `drillBiomes` (biome name → item ids a Driller can mine there)
 - `modifiers`: lubricants, fertilizers, overclockGems, overclockGroups (slot i = group i), skills
@@ -209,6 +221,33 @@ farm plots: `Seed`/`CurrentRequiredCrop`, `Water`, `Fertilizer`, `Crop.CurrentTo
 Areas have `Biome` → island name key `<Biome>_NAME`. `PlayerSkills[{Id, State}]`.
 To measure mechanics: copy a save, let the user play ~1–3 min without sleeping/menus, save again,
 `python tools/save_reader.py --diff a.dat b.dat`.
+
+### Writing saves (verified in game on test worlds, 2026-10)
+
+- Decode → re-encode is byte-identical (standard bzip2 level 9, `BZh9`); keep tags as read (float32 vs float64,
+  "True"/"False" strings). The game always loads via `JSONNode.LoadFromCompressedBase64` — bzip2 is required.
+  No checksum. A copy under a new file name `WORLDnnn.dat` (+ `.png`, `Name` inside) shows up as another world.
+- `WorldArea.LoadPlayerBuilding` instantiates the prefab by `BuildingId` at `X/Y` (world coords) and runs
+  `building.Load`; **no placement check** — the editor must check island/overlap/grid itself.
+- Ids: any unused negative int works; the game keeps them on its next save. References: transporter
+  `TwinContainer {Id, Area}`, antenna `Tasks*[].TargetBuilding`, farm plot `Crop.Id` = its plant prop's `Id`.
+- Works (WORLD001/002): move a building on its island; move to another island (record moved between
+  `Buildings` lists); Advanced Farm with its `IsInnerFarmPlot` plots + their `Crop` copies + plant props (same
+  delta, props moved between `Props` lists); delete (dangling bot tasks are fine — tasks are regenerated);
+  recipe change via `RecipeId` (old items left in the inventory drop on the ground at load; clearing = slots
+  `{Resource:-1, Amount:0, ExtraData:""}`, `CurrentProductionTime` 0); move a transporter pair to free paired
+  slots (`TransportersSlots` X/Y are **world** coordinates); move a prop (`Props[]` X/Y); new building = deep copy
+  of a full record of the same `BuildingId` with a new Id and emptied inventories.
+- An Advanced Farm record lists its inner plots in `FarmPlots: [Id…]` (slot order); a copied farm must list its new
+  plots there — with the template's ids the game throws in `AdvancedFarmPlotBuilding.LoadDependentData` and the world
+  freezes (WORLD003, first try).
+- Fails: a minimal new record (Id/Name/BuildingId/X/Y/Side only) — `NullReferenceException` in
+  `BaseContainer.Setup` (Player.log). New buildings need a complete record.
+- Props (`Area.Props[]`: rocks, bushes, trees, ores, planted crops with `HasOwnerFarmPlot`) are in world coords.
+  Building over props needs relic 477 (`canPlaceOverProps`, extractable props only); then the prop is mined.
+- Premade (not movable): buildings without a placement collider (NPCs, shops, landmarks, Museum) and islands with
+  `Premade: True`.
+- Game errors: `%USERPROFILE%\AppData\LocalLow\BEHEMUTT\Nova Lands\Player.log`.
 
 ## Reading the game code
 
