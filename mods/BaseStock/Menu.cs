@@ -28,8 +28,8 @@ namespace BaseStock
         static readonly Dictionary<string, (string en, string ru)> Texts = new()
         {
             ["title"] = ("BaseStock settings", "Настройки BaseStock"),
-            ["hint"] = ("click / wheel — change   F9 — mode   Alt — other scope   F10 — close",
-                        "клик / колесо — изменить   F9 — режим   Alt — другой режим   F10 — закрыть"),
+            ["hint"] = ("click / wheel — change   F9 — mode   Alt — other scope   Ctrl — all / working   F10 — close",
+                        "клик / колесо — изменить   F9 — режим   Alt — другой режим   Ctrl — все / работающие   F10 — закрыть"),
             ["mode"] = ("Mode", "Режим"),
             ["modeIsland"] = ("current island", "текущий остров"),
             ["modeAll"] = ("all islands", "все острова"),

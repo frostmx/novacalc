@@ -28,7 +28,7 @@ namespace BaseStock
     public partial class BaseStockMod : MelonMod
     {
         MelonPreferences_Category cat;
-        MelonPreferences_Entry<KeyCode> scopeKey, peekKey, menuKey;
+        MelonPreferences_Entry<KeyCode> scopeKey, peekKey, menuKey, sourceKey;
         MelonPreferences_Entry<bool> showNames, hideWithPopups, countBuildingInventories;
         MelonPreferences_Entry<float> refreshSeconds, fontSize, rowHeight, iconSize, topMargin, bottomMargin,
             rightMargin, columnGap, backgroundAlpha, scale;
@@ -75,6 +75,8 @@ namespace BaseStock
             peekKey = cat.CreateEntry("PeekKey", KeyCode.LeftAlt,
                 description: "Hold to show the other scope (island <-> all islands, off -> all); LeftAlt also accepts RightAlt");
             menuKey = cat.CreateEntry("MenuKey", KeyCode.F10, description: "Settings menu");
+            sourceKey = cat.CreateEntry("RateSourceKey", KeyCode.LeftControl,
+                description: "Tap (press and release alone) to switch rates synthetic <-> real; LeftControl also accepts RightControl");
             mode = cat.CreateEntry("Mode", "island", description: "island | all | off");
             rateUnit = cat.CreateEntry("RateUnit", "minute", description: "minute | hour");
             rateSource = cat.CreateEntry("RateSource", "synthetic",
@@ -106,6 +108,7 @@ namespace BaseStock
         {
             if (Input.GetKeyDown(scopeKey.Value)) { mode.Value = ModeNames[(Mode + 1) % 3]; timer = 0; }
             if (Input.GetKeyDown(menuKey.Value)) { ToggleMenu(); timer = 0; }
+            UpdateSourceKey();
             try { UpdateMenu(); } catch (Exception e) { LoggerInstance.Error(e.ToString()); menuOpen = false; }
             bool peek = Input.GetKey(peekKey.Value) || (peekKey.Value == KeyCode.LeftAlt && Input.GetKey(KeyCode.RightAlt));
             if (peek != peeking) { peeking = peek; timer = 0; }
@@ -124,6 +127,29 @@ namespace BaseStock
             timer = Mathf.Max(0.1f, refreshSeconds.Value);
             try { Refresh(); }
             catch (Exception e) { LoggerInstance.Error(e.ToString()); timer = 5; }
+        }
+
+        // Ctrl tap: switch synthetic <-> real on release, only if nothing else was pressed while it was held
+        // (so Ctrl+click / Ctrl+key combos of the game do not toggle it)
+        bool sourceHeld, sourceCombo;
+        void UpdateSourceKey()
+        {
+            KeyCode k = sourceKey.Value;
+            KeyCode alt = k == KeyCode.LeftControl ? KeyCode.RightControl : k == KeyCode.RightControl ? KeyCode.LeftControl : k;
+            bool down = Input.GetKeyDown(k) || Input.GetKeyDown(alt);
+            bool held = Input.GetKey(k) || Input.GetKey(alt);
+            if (down && !sourceHeld) { sourceHeld = true; sourceCombo = false; return; }
+            if (!sourceHeld) return;
+            if (held)
+            {
+                if (Input.anyKeyDown && !down) sourceCombo = true;   // another key or mouse button during the hold
+                return;
+            }
+            sourceHeld = false;
+            if (sourceCombo) return;
+            rateSource.Value = RealRates ? "synthetic" : "real";
+            timer = 0;
+            if (menuOpen) RefreshMenuValues();
         }
 
         // a building window the player interacts with (BasePlayer.IsInteractingWithPopup) or a PopupManager popup

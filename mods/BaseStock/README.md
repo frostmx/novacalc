@@ -158,6 +158,7 @@ properties with the same name. Cast with `TryCast<T>()` and `Cast<T>()`, and get
 |---|---|---|
 | `Mode` | `island` | `island` \| `all` \| `off` (F9 cycles) |
 | `ScopeKey` / `PeekKey` / `MenuKey` | `F9` / `LeftAlt` / `F10` | Keys (LeftAlt also accepts RightAlt) |
+| `RateSourceKey` | `LeftControl` | Tap to switch `RateSource` synthetic ↔ real. Fires on release, only if no other key or button was pressed meanwhile; also accepts RightControl |
 | `RateMode` | `net` | `net` \| `both` \| `off` |
 | `RateUnit` | `minute` | `minute` \| `hour` |
 | `RateSource` | `synthetic` | `synthetic` = every placed building at full speed \| `real` = only working buildings |
