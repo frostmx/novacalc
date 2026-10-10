@@ -1,0 +1,74 @@
+[center][size=6][b][color=#f2d14c]BaseStock[/color][/b][/size]
+[size=3][i]Everything on your island — and where it is going — at a glance[/i][/size]
+
+[img]https://raw.githubusercontent.com/frostmx/novacalc/main/mods/BaseStock/nexus/01_overview.png[/img][/center]
+
+[size=4][b][color=#7cc46b]What it does[/color][/b][/size]
+A compact list on the right side of the HUD with every item on the island you are standing on: its icon, how many you have, and how fast the stock grows or shrinks. No more running from chest to chest to check if there is enough steel, or wondering why the sand keeps running out.
+
+[list]
+[*][b]Counts everything on the island[/b] — all containers [i]and[/i] the inputs/outputs of every building: furnaces, refineries, assemblers, drills, barns, farms, generators (fuel, lubricant, seeds, fertilizer included).
+[*][b]Income / consumption[/b] per minute or per hour, calculated from what is placed: [color=#7ce66b]+12[/color] surplus, [color=#ff6b6b]-3[/color] deficit, [color=#bbbbbb]0[/color] balanced. Items that are only produced or only consumed show up too, even with 0 in stock.
+[*][b]Sorted by game progression[/b] — twig and ore first, then ingots, steel, plastic, electronics, titanium, up to quantum tech. Tiers are separated by a thin line. Tiers are computed from the game's own research tree when the world loads, so items added by patches or other mods find their place automatically.
+[*][b]Fits the screen[/b] — a column fills up to the bottom, then a new one starts to the left. Uses the game's HUD scale and pixel font.
+[*][b]Stays out of the way[/b] — hides while a building window or game menu is open.
+[*][b]Read-only[/b] — does not change your save, buildings or game balance.
+[/list]
+
+[center][img]https://raw.githubusercontent.com/frostmx/novacalc/main/mods/BaseStock/nexus/02_list.png[/img][/center]
+
+[size=4][b][color=#7cc46b]Controls[/color][/b][/size]
+[list]
+[*][b]F9[/b] — cycle mode: [i]current island → all islands → off[/i]
+[*][b]Hold Alt[/b] — peek at the other mode (island ↔ all islands; when off — all islands)
+[*][b]F10[/b] — settings menu (click or mouse wheel to change a value)
+[/list]
+
+[size=4][b][color=#7cc46b]Settings (F10)[/color][/b][/size]
+[center][img]https://raw.githubusercontent.com/frostmx/novacalc/main/mods/BaseStock/nexus/03_menu.png[/img][/center]
+[list]
+[*]Mode — current island / all islands / off
+[*]Income / consumption — net / produced and consumed separately / hidden
+[*]Rate unit — per minute / per hour
+[*]Item names — on / off (icons only by default)
+[*]Sort — by tier / by name
+[*]Size — 50–300 %
+[*]Count items in — containers + buildings / containers only
+[*]Hide with open windows, background opacity, top and bottom margin
+[/list]
+The menu is in English, or Russian when the game runs in Russian. Item and island names always come from the game, in your game language. Everything is also stored in [font=Courier New]UserData/MelonPreferences.cfg[/font], section [font=Courier New][BaseStock][/font] (keys can be rebound there).
+
+[size=4][b][color=#7cc46b]How the rates are calculated[/color][/b][/size]
+Rates are the [b]nominal[/b] output of what you have built — what the buildings make when they run at full speed — not a measurement. All numbers are read from the running game:
+[list]
+[*][b]Production buildings[/b] — current recipe, building speed with skills, Gem Overclocker and the selected lubricant; extra-output skills; lubricant burn.
+[*][b]Driller[/b] — selected recipe and drill bit wear.
+[*][b]Animal Barn[/b] — speed with the number of animals.
+[*][b]Farms[/b] (incl. Advanced Farm plots) — seeds, harvest, water and fertilizer, renewable plants, Irrigation Efficiency.
+[*][b]Generators[/b] — fuel with efficiency skills.
+[*][b]Oxygenator[/b] — water used for your oxygen, with its efficiency skills (assumes you stay on islands that need oxygen).
+[/list]
+Not counted: the Workbench (manual crafting), the Animal Cloning Machine, and the Collector Bot harvest bonus.
+
+[size=4][b][color=#7cc46b]Requirements[/color][/b][/size]
+[list]
+[*]Nova Lands (Steam, current version)
+[*][url=https://github.com/LavaGang/MelonLoader/releases]MelonLoader[/url] 0.7.x (tested with 0.7.3)
+[/list]
+
+[size=4][b][color=#7cc46b]Installation[/color][/b][/size]
+[list=1]
+[*]Install MelonLoader into the Nova Lands folder (installer, or unzip [font=Courier New]MelonLoader.x64.zip[/font] next to [font=Courier New]Nova Lands.exe[/font]).
+[*]Start the game once and wait until it reaches the main menu — the first start takes 1–3 minutes while MelonLoader prepares the game. Close the game.
+[*]Put [font=Courier New]BaseStock.dll[/font] into [font=Courier New]Nova Lands/Mods/[/font] (the archive already has this folder).
+[*]Start the game and load your world.
+[/list]
+[b]Uninstall:[/b] delete [font=Courier New]Mods/BaseStock.dll[/font]. Your saves are untouched.
+
+[size=4][b][color=#7cc46b]Compatibility[/color][/b][/size]
+Does not patch game code or saves, so it should work alongside other MelonLoader mods. Safe to add or remove mid-playthrough.
+
+[size=4][b][color=#7cc46b]Source[/color][/b][/size]
+Open source: [url=https://github.com/frostmx/novacalc]github.com/frostmx/novacalc[/url] ([font=Courier New]mods/BaseStock[/font]). The same repository has NovaCalc — a production chain calculator for Nova Lands.
+
+Bug reports and suggestions are welcome in the Posts / Bugs tabs.

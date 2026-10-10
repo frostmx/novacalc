@@ -1,0 +1,1 @@
+Every item on your island at a glance: a compact HUD list of everything stored in containers and factory inputs/outputs, sorted by game progression, with live income/consumption per minute or hour calculated from your placed buildings. Island / all islands / off (F9), settings menu (F10). MelonLoader.

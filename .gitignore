@@ -13,3 +13,6 @@ __pycache__/
 # local Claude Code settings (launch.json is shared)
 .claude/*
 !.claude/launch.json
+
+# Nexus release archives (built from bin/)
+mods/*/nexus/*.zip
