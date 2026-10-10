@@ -107,7 +107,7 @@ Container content = `BaseContainer.popup` → `BaseContainerPopup.inventory.GetI
   `layoutBoard`, cards show their island); positions are kept per view in `state.layouts[view]` and swapped by
   `setBoardView` (first visit / "Arrange" = `arrangeBoard`). Island membership changes only in the island view.
 - Board islands: "+ Island" makes an empty frame; dropping a card into a frame (smallest one wins) moves it to that
-  island, dragging it well away from its own frame takes it off; × deletes an island (cards stay), double click renames.
+  island, anywhere else it stays on its island (the frame grows); Alt+drop outside every frame takes it off; × deletes an island (cards stay), double click renames.
 
 ## Rules
 

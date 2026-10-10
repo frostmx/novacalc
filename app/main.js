@@ -1175,11 +1175,12 @@ window.addEventListener('pointerup', ev => {
   el.viewport.classList.remove('panning');
   if (d.kind === 'arch') { archView.pointerUp(ev); return; }
   if (d.kind === 'node' && d.moved && state.boardView !== 'chain') {
-    // dropped into another island's frame: joins it; dragged well away from its own island: leaves it
+    // dropped into another island's frame: joins it; anywhere else it stays on its island (its frame just grows),
+    // unless Alt is held: then a drop outside every frame takes it off the islands
     const cx = d.n.x + NODE_W / 2;
     const cy = d.n.y + 20;
     let g = islandAtBoard(cx, cy, d.boxes, d.n.g);
-    if (!g && d.n.g && inFrame(d.own, cx, cy, 150)) g = d.n.g;
+    if (!g && !(ev.altKey && !inFrame(d.own, cx, cy))) g = d.n.g;
     if (g !== d.n.g) {
       if (g) d.n.g = g; else delete d.n.g;
       commit();
