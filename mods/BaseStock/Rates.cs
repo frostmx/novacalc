@@ -12,6 +12,10 @@
 //    (once: always; renewable: only if the plot has water), halved on an Advanced Farm with Irrigation Efficiency;
 //    fertilizer 1 per fertilizerDuration s, only while watered.
 //  - generators: 1 fuel per FuelDuration (= fuelDuration × (1 + efficiency)) s.
+// Real mode (RateSource = real): only buildings that are working right now count, i.e. their progress counter moved
+// within the last ActiveWindow seconds of game time — currentProductionTime (stops when unpowered, starved of inputs, or
+// with a full output: the timer then waits at the cycle end), the crop's growth / renewable timer and charges on a
+// farm plot, currentFuelDuration of a generator. The oxygenator counts only while the player is on an oxygen island.
 //  - oxygenator: water balls = 60 × player oxygenDrainPerSecond / OxygenPerWaterUnit per minute (see Oxygenator()).
 // Skipped: Workbench (manual), Animal Cloning Machine (one-off), scanners / special buildings, collector-bot bonus.
 using System;
@@ -35,7 +39,34 @@ namespace BaseStock
             "DrillerBuilding", "AnimalBarnBuilding",
         };
 
-        public void Clear() { In.Clear(); Out.Clear(); seen.Clear(); }
+        public bool Real;                 // count only working buildings
+        public float Now;                 // game time (Time.time) of this refresh
+        const float ActiveWindow = 5f;    // seconds of game time without progress = stopped
+        public int Working, Stopped;      // buildings counted / skipped as stopped in real mode
+        readonly Dictionary<IntPtr, (float value, float changed, float seen)> progress = new();
+
+        public void Clear()
+        {
+            In.Clear(); Out.Clear(); seen.Clear(); Working = Stopped = 0;
+            if (progress.Count > 4096)
+            {
+                var old = new List<IntPtr>();
+                foreach (var kv in progress) if (Now - kv.Value.seen > 120f) old.Add(kv.Key);
+                foreach (var k in old) progress.Remove(k);
+            }
+        }
+
+        // true while the building's progress counter keeps moving; first sight trusts the game's own state flag
+        bool Active(IntPtr key, float value, bool hint)
+        {
+            if (!Real) return true;
+            bool on;
+            if (!progress.TryGetValue(key, out var p)) { progress[key] = (value, hint ? Now : float.NegativeInfinity, Now); on = hint; }
+            else if (value != p.value) { progress[key] = (value, Now, Now); on = true; }
+            else { progress[key] = (p.value, p.changed, Now); on = Now - p.changed <= ActiveWindow; }
+            if (on) Working++; else Stopped++;
+            return on;
+        }
 
         static void Add(Dictionary<int, double> d, int id, double v)
         {
@@ -99,6 +130,11 @@ namespace BaseStock
             int perBall = opw + (int)Math.Round(opw * (double)o.productionEfficiencyBonus, MidpointRounding.ToEven);
             OxygenInfo = $"oxygenator: drain {drain}/s, oxygenPerWaterUnit {opw}, efficiency {o.productionEfficiencyBonus}, per ball {perBall}";
             int water = WaterId(null);
+            if (Real)
+            {
+                var here = WorldUpdateManager.Instance?.CurrentPlayerArea;
+                if (here == null || !here.ConsumeOxygenHere) return;
+            }
             if (drain > 0 && perBall > 0 && water != int.MinValue) Add(In, water, 60.0 * drain / perBall);
         }
 
@@ -107,6 +143,7 @@ namespace BaseStock
             if (p.buildingId == WORKBENCH || p.buildingId == CLONING) return;
             var r = p.currentRecipe;
             if (r == null || r.productionTime <= 0) return;
+            if (!Active(p.Pointer, p.currentProductionTime, p.IsProducing)) return;
 
             double speed;
             LubricantScriptableObject lub = null;
@@ -164,6 +201,21 @@ namespace BaseStock
             var seed = seedRes != null ? seedRes.TryCast<SeedResourceScriptableObject>() : null;
             var crop = seed != null ? seed.cropType : null;
             if (crop == null) return;
+            if (Real)
+            {
+                // the planted crop's growth timer (once-crops and the first growth of renewable plants) plus a
+                // renewable plant's interval timer and charges; an empty plot (no seed yet) is stopped
+                var cur = plot.currentCrop;
+                float v = 0;
+                if (cur != null)
+                {
+                    var cb = cur.TryCast<CropBuilding>();
+                    if (cb != null) v += cb.currentTotalGrowthTime;
+                    var rr = cur.TryCast<RenewableResourceSource>() ?? plot.currentCropRenewableRef;
+                    if (rr != null) v += rr.currentTime + rr.currentResources * 10000f;
+                }
+                if (!Active(plot.Pointer, v, cur != null)) return;
+            }
 
             var fertRes = plot.CurrentRequiredFertilizer;
             if (fertRes == null && farm != null) fertRes = farm.currentRequiredFertilizer;
@@ -217,6 +269,7 @@ namespace BaseStock
         void Generator(EnergyGenerationBuilding g)
         {
             if (!g.useFuel || g.fuel == null) return;
+            if (!Active(g.Pointer, g.currentFuelDuration, g.consumingFuel)) return;
             float d = g.fuelDuration * (1 + g.productionEfficiencyBonus); // = FuelDuration getter (protected)
             if (d > 0) Add(In, g.fuel.ResourceId, 60.0 / d);
         }

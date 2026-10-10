@@ -70,6 +70,19 @@ game:
   round(oxygenPerWaterUnit × efficiency))`. From `BasePlayer.UpdateOxygen`: the `oxygenConsumptionBonus` skill only
   applies on islands without an oxygenator.
 
+**Real mode** (`RateSource = real`) counts only the buildings that are working right now. A building counts when
+its progress counter moved within the last 5 s of game time (`Time.time`, so a paused game freezes the state):
+
+- `currentProductionTime` for production buildings. It stops when the building is unpowered or short of inputs. With
+  a full output it waits at the cycle end, while `IsProducing` stays true, so that flag alone is not enough.
+- The crop's `currentTotalGrowthTime`, plus a renewable plant's `currentTime` and `currentResources`, for farm plots.
+  An empty plot is stopped.
+- `currentFuelDuration` for generators.
+
+The first time a building is seen, the game's own flag decides (`IsProducing`, a planted crop, `consumingFuel`).
+The oxygenator counts only while the player is on an island with `ConsumeOxygenHere`. The header then shows
+working/counted buildings, e.g. `/min · 34/41`.
+
 The mechanics behind these formulas are listed with their sources (save experiments, disassembly) in the repo's
 `CLAUDE.md`, under "Verified game mechanics".
 
@@ -147,6 +160,7 @@ properties with the same name. Cast with `TryCast<T>()` and `Cast<T>()`, and get
 | `ScopeKey` / `PeekKey` / `MenuKey` | `F9` / `LeftAlt` / `F10` | Keys (LeftAlt also accepts RightAlt) |
 | `RateMode` | `net` | `net` \| `both` \| `off` |
 | `RateUnit` | `minute` | `minute` \| `hour` |
+| `RateSource` | `synthetic` | `synthetic` = every placed building at full speed \| `real` = only working buildings |
 | `SortMode` | `tier` | `tier` \| `alpha` |
 | `TierBounds` | `6,10,13,16,18` | Level where each tier from II up starts |
 | `ShowNames` | `false` | Item names next to icons |
@@ -170,8 +184,8 @@ properties with the same name. Cast with `TryCast<T>()` and `Cast<T>()`, and get
 
 ## Known limitations
 
-- Rates are nominal. They do not account for buildings short of inputs, full outputs, missing energy, or the
-  Collector Bot harvest bonus.
+- Synthetic rates are nominal. Real mode drops stopped buildings, but a working building is still counted at its
+  full speed. The Collector Bot harvest bonus is not counted in either mode.
 - The oxygenator rate assumes the player stays on islands that consume oxygen.
 - Raw resources that only exist on later islands (e.g. Behemuttium) still sit in tier I, because island order is
   not part of the research graph.

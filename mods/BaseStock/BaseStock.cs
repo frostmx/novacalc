@@ -32,7 +32,8 @@ namespace BaseStock
         MelonPreferences_Entry<bool> showNames, hideWithPopups, countBuildingInventories;
         MelonPreferences_Entry<float> refreshSeconds, fontSize, rowHeight, iconSize, topMargin, bottomMargin,
             rightMargin, columnGap, backgroundAlpha, scale;
-        MelonPreferences_Entry<string> mode, rateUnit;
+        MelonPreferences_Entry<string> mode, rateUnit, rateSource;
+        bool RealRates => rateSource.Value?.Trim().ToLowerInvariant() == "real";
 
         float timer;
         bool peeking;                                    // peek key held: show the other scope
@@ -76,6 +77,8 @@ namespace BaseStock
             menuKey = cat.CreateEntry("MenuKey", KeyCode.F10, description: "Settings menu");
             mode = cat.CreateEntry("Mode", "island", description: "island | all | off");
             rateUnit = cat.CreateEntry("RateUnit", "minute", description: "minute | hour");
+            rateSource = cat.CreateEntry("RateSource", "synthetic",
+                description: "synthetic = every placed building at full speed | real = only buildings working right now (powered, supplied, output not full)");
             scale = cat.CreateEntry("Scale", 1f, description: "Size of the list (font, icons, rows)");
             showNames = cat.CreateEntry("ShowNames", false, description: "false = icon + count only");
             hideWithPopups = cat.CreateEntry("HideWithPopups", true, description: "Hide while a building window / game popup is open");
@@ -151,6 +154,8 @@ namespace BaseStock
             counts.Clear();
             countedWindows.Clear();
             if (++cacheAge >= 30) { cacheAge = 0; windowCache.Clear(); }
+            rates.Real = RealRates;
+            rates.Now = Time.time;
             rates.Clear();
             bool withRates = RateMode != 0;
             if (ShowAll && WorldManager.Instance != null)
@@ -211,7 +216,8 @@ namespace BaseStock
             });
 
             header.text = (ShowAll ? "Σ" : IslandName(area)) +
-                          (RateMode != 0 ? $" <size=70%><color=#BBBBBB>{T(RateFactor > 1 ? "unitHour" : "unitMin")}</color></size>" : "");
+                          (RateMode != 0 ? $" <size=70%><color=#BBBBBB>{T(RateFactor > 1 ? "unitHour" : "unitMin")}" +
+                                           (RealRates ? $" · {rates.Working}/{rates.Working + rates.Stopped}" : "") + "</color></size>" : "");
             Layout();
             SetActive(entries.Count > 0);
         }
