@@ -12,6 +12,13 @@ python -m http.server 8642        # from the repo root
 Open http://localhost:8642/app/ (root `index.html` redirects). In the desktop app: preview config `novacalc`
 in `.claude/launch.json`. No build step, plain ES modules, no dependencies.
 
+## Hosting
+
+Public repo https://github.com/frostmx/novacalc, GitHub Pages from `main` (repo root) →
+https://frostmx.github.io/novacalc/ (root `index.html` redirects to `app/`). Every push to `main` redeploys
+(~1 min). Not in git (`.gitignore`): `data/raw/`, `.tmp/`, mod `bin/obj`, local `.claude` settings. Commits use the
+repo-local GitHub noreply identity. Browsers may cache old modules after a deploy — hard reload.
+
 ## Layout
 
 ```
