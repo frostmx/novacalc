@@ -10,6 +10,12 @@ Needs data/gamedata.json + data/raw (build_data.py / extract_game.py). Levels:
                      Mega furnaces (ContinuousProductionBuilding) are skipped — their blueprints are bought with
                      credits only, a shortcut, never the first access; Animal Cloning Machine is skipped too.
   raw item          = (no producing recipe) half a level before its first consumer (research cost or recipe input).
+  hard drive        = researches from the Inventor's hard drives (HardDriveResearch*, or isHardDrive) have no
+                      requirements or costs in the data — they come with spacewalks — so they get HARD_DRIVE_LEVEL,
+                      above every tier bound: their recipes (Levittium, Quantum Connector / Qubit Chip / Quantum
+                      Computer, Neutron Core, Black Hole …) land in the last tier. A hard drive as a *requirement* of
+                      another research (the Inventor hands out inventions and drives in turn) is ignored, so it does
+                      not drag e.g. the Driller's Gold Nugget recipe (InventorInventionResearch1) along.
 Example why research matters: Titanium Ingot is a 2-step recipe, but SuperhardMinerals needs GlassWorks, which costs
 Electronic Parts → titanium comes after electronics.
 """
@@ -22,6 +28,7 @@ import sys
 DATA = sys.argv[1] if len(sys.argv) > 1 else "data"
 OUT = sys.argv[2] if len(sys.argv) > 2 else os.path.join("mods", "BaseStock", "ItemTiers.cs")
 INF = 10 ** 9
+HARD_DRIVE_LEVEL = 100
 
 
 def load(name):
@@ -47,6 +54,7 @@ for f in glob.glob(os.path.join(DATA, "raw", "cls_*.json")):
                 bld_start.add(o["buildingId"])
 research = {o["_key"]: o for o in load("raw/cls_ResearchDescriptor.json")}
 research_unlocked = {rec_id.get(k) for o in research.values() for k in (o["unlockedRecipes"] or [])}
+hard_drive = {k for k, o in research.items() if "HardDrive" in o["m_Name"] or o.get("isHardDrive")}
 
 producers = collections.defaultdict(list)  # item -> [(recipe, building id)]
 for b in g["buildings"]:
@@ -63,8 +71,9 @@ def solve(raw_level):
     for _ in range(100):
         changed = False
         for k, o in research.items():
-            v = 1 + max([res[r] for r in o["requirement"] if r in res]
-                        + [item.get(res_id.get(c.get("resource")), 0) for c in (o["researchCost"] or [])] + [0])
+            v = HARD_DRIVE_LEVEL if k in hard_drive else 1 + max(
+                [res[r] for r in o["requirement"] if r in res and r not in hard_drive]
+                + [item.get(res_id.get(c.get("resource")), 0) for c in (o["researchCost"] or [])] + [0])
             if min(v, INF) < res[k]:
                 res[k], changed = min(v, INF), True
         rec_un = collections.defaultdict(lambda: INF, {r: 0 for r in rec_start})

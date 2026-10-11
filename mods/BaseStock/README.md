@@ -99,6 +99,13 @@ Item level is computed from the research graph:
 - **Raw item level** (an item no recipe produces) = half a level before the first research or recipe that consumes
   it.
 
+- **Inventor hard drives** (`HardDriveResearch*`, or `IsHardDrive`) have no requirements or costs in the data,
+  because they come with spacewalks. They get level 100, above every tier bound, so their recipes land at the end
+  of the last tier: Levittium, Levittium Cell, MAGNETOID, Quantum Connector, Qubit Chip, Quantum Computer, Neutron
+  Core, Black Hole, and everything made from them. A drive listed as a *requirement* of another research is
+  ignored: the Inventor hands out inventions and drives in turn, and counting it would drag e.g. the Driller's Gold
+  Nugget recipe along.
+
 Example: Titanium Ingot is a 2-step recipe, but its research needs GlassWorks, which costs Electronic Parts. So
 titanium lands after electronics.
 

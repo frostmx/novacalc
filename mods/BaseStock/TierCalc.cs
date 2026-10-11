@@ -7,6 +7,10 @@
 //                       mega furnaces (ContinuousProductionBuilding, credit-bought shortcut) and the Animal Cloning
 //                       Machine are skipped
 //   raw item          = (no producing recipe) half a level before its first consumer (research cost / recipe input)
+//   hard drive        = Inventor hard drive researches (HardDriveResearch*, or IsHardDrive) have no requirements or costs
+//                       in the data — they come with spacewalks — so they get HardDriveLevel, above every tier bound:
+//                       their recipes land in the last tier. A drive as a requirement of another research (the
+//                       Inventor hands out inventions and drives in turn) is ignored.
 // Sources: ResearchesList.Researches, RecipesList.Recipes (startUnlocked), BuildingsList.Buildings (prefabs:
 // startUnlocked, availableRecipes of production buildings and the Advanced Farm), ResourcesList.Resources.
 using System;
@@ -20,9 +24,10 @@ namespace BaseStock
     {
         const double INF = 1e9;
         const int CLONING = 439;
+        const double HardDriveLevel = 100;
 
         class Recipe { public int id; public List<int> inputs = new(); public List<int> outputs = new(); }
-        class Research { public List<IntPtr> req = new(); public List<int> cost = new(); public List<int> recipes = new(); public List<int> buildings = new(); }
+        class Research { public bool hardDrive; public List<IntPtr> req = new(); public List<int> cost = new(); public List<int> recipes = new(); public List<int> buildings = new(); }
 
         public static Dictionary<int, float> Compute(out string summary)
         {
@@ -51,7 +56,8 @@ namespace BaseStock
             {
                 var d = all[i];
                 if (d == null || researches.ContainsKey(d.Pointer)) continue;
-                var x = new Research();
+                string rname = d.name ?? "";
+                var x = new Research { hardDrive = rname.Contains("HardDrive") || d.isHardDrive };
                 var req = d.requirement;
                 if (req != null) for (int k = 0; k < req.Count; k++) if (req[k] != null) x.req.Add(req[k].Pointer);
                 var cost = d.researchCost;
@@ -139,9 +145,10 @@ namespace BaseStock
                 foreach (var kv in researches)
                 {
                     double m = 0;
-                    foreach (var r in kv.Value.req) if (res.TryGetValue(r, out double rv)) m = Math.Max(m, rv);
+                    foreach (var r in kv.Value.req)
+                        if (res.TryGetValue(r, out double rv) && !researches[r].hardDrive) m = Math.Max(m, rv); // drive as a requirement: ignored
                     foreach (int c in kv.Value.cost) m = Math.Max(m, Item(c));
-                    double v = Math.Min(1 + m, INF);
+                    double v = kv.Value.hardDrive ? HardDriveLevel : Math.Min(1 + m, INF);
                     if (v < res[kv.Key]) { res[kv.Key] = v; changed = true; }
                 }
                 var recUn = new Dictionary<int, double>(); var bldUn = new Dictionary<int, double>();
