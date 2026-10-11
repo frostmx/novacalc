@@ -113,6 +113,9 @@ def main(root, raw_dir, out_dir, langs):
         po = o.get("placementOffset")
         if po:
             b["placementOffset"] = [exact(po["x"]), exact(po["y"])]
+        if o.get("_magnetoidSlots") and all(o["_magnetoidSlots"]):
+            # magnetoid slots (saves refer to slot indices): edge-cell centres relative to the building position
+            b["magnetSlots"] = [[exact(x), exact(y)] for x, y in o["_magnetoidSlots"]]
         if o.get("canBeMoved"):  # BaseBuilding.canBeMoved: the player may move it (NPCs, landmarks, transporters: no)
             b["movable"] = True
         buildings.append(b)

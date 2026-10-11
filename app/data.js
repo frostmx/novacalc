@@ -149,6 +149,15 @@ export async function loadData() {
   const transporterPerMin = tr ? (60 * tr.perRound) / Math.max(tr.duration, tr.tryInterval) : 0;
   const inputArmId = g.buildings.find(b => b.key === 'TransporterContainerInput')?.id;
   const outputArmId = g.buildings.find(b => b.key === 'TransporterContainerOutput')?.id;
+  // logistics that carry one chosen item: drone base (to its target containers, any island), item antenna (to the
+  // buildings of its island); magnetoids belong to the island's Magnetoid Antenna
+  const keyId = key => g.buildings.find(b => b.key === key)?.id;
+  const droneBaseId = keyId('DroneBase');
+  const itemAntennaId = keyId('TransporterAntenna');
+  const magnetAntennaId = keyId('MagnetoidAntenna');
+  // DroneBase.targetContainers is a List<DepositAreaContainer>: deposits, drone bases, item antennas, export rockets
+  const DRONE_TARGET_CLASSES = new Set(['DepositAreaContainer', 'DroneBase', 'TransporterAntenna', 'ExportRocketBuilding']);
+  const droneTarget = b => DRONE_TARGET_CLASSES.has(b?.class);
   // props on the islands (rocks, bushes, trees, ores): collider box and what they drop
   const props = new Map((g.props ?? []).map(p => [p.id, p]));
   const propName = p => (p?.loot?.length ? p.loot.map(itemName).join(', ') : p?.key ?? '');
@@ -160,7 +169,7 @@ export async function loadData() {
     icons, icon,
     skills, gems, lubricants, fertilizers, overclockGroups, overclockGroupOf, productionSkills, gemBuildingId,
     drill, drillBiomes, drillIslands, biomeColors, biomes, infraBuildings, transporterPerMin, inputArmId, outputArmId,
-    props, propName,
+    props, propName, droneBaseId, itemAntennaId, magnetAntennaId, droneTarget,
     skillName, skillDesc, waterItem: g.constants?.waterBall, goalPresets, goalLabel, itemsByName,
     items, recipes, buildings, creatures, entries, entriesByBuilding, productionBuildings,
     producersOf: id => producers.get(id) ?? [],

@@ -2,7 +2,7 @@
 // Pure rendering + pointer handling; every change of the model goes through ctx.ops (main.js).
 import {
   RY, hexCenter, hexAt, hexSlots, hexCorners, footprintOf, rectAt, snapPosition, canPlace,
-  TRANSPORTER_SLOTS, slotPair, nearestSlot,
+  TRANSPORTER_SLOTS, slotPair, nearestSlot, magnetSlotAt,
 } from './world.js';
 
 export const U = 32; // screen px per world unit at zoom 1
@@ -13,19 +13,23 @@ const ARM_REACH = 2.5;    // how close to a shore slot the pointer must be to pl
 /**
  * ctx: { el: { root, hexes, labels, blds, links, card }, state(), calc(), db, tk, esc, iconHtml, EPS,
  *        toWorld(clientX, clientY) -> px in the architect layer, setView(box), hoverItem(), cardHtml(nodeId),
- *        onArmChange(armed), ops: {...} }
+ *        onArmChange(armed), toast(text, bad), ops: {...} }
  */
 export function createArch(ctx) {
   const { el, db, tk, esc } = ctx;
   let armed = null;    // what a click places: { b, entry?, node? }
   let drag = null;     // moving a placed building ({ p }) or a prop ({ prop })
   let selected = null; // placed id
+  let selMagnet = null; // magnetoid id
+  let picking = null;  // { kind: 'target' | 'magnet', from }: the next click on a building picks it
   let ghost = null;
 
   const S = () => ctx.state();
   const toUnits = (cx, cy) => { const p = ctx.toWorld(cx, cy); return { x: p.x / U, y: -p.y / U }; };
   const islandsWithHex = () => Object.entries(S().groups).filter(([, g]) => g.q != null && g.r != null);
   const isArm = b => !!b?.key?.startsWith('TransporterContainer');
+  // buildings that carry one chosen item: transporter arms, drone bases, item antennas
+  const carries = b => isArm(b) || (b && (b.id === db.droneBaseId || b.id === db.itemAntennaId));
   const groupAt = (q, r) => islandsWithHex().find(([, g]) => g.q === q && g.r === r)?.[0];
   const centerOf = g => { const isl = S().groups[g]; return hexCenter(isl.q, isl.r); };
 
@@ -99,6 +103,7 @@ export function createArch(ctx) {
     const st = S();
     const calc = ctx.calc();
     if (selected && !st.placed.some(p => p.id === selected)) selected = null;
+    if (selMagnet && !(st.magnets ?? []).some(m => m.id === selMagnet)) selMagnet = null;
     const used = new Set();
     let hexes = '';
     let labels = '';
@@ -149,7 +154,7 @@ export function createArch(ctx) {
       const cn = p.node != null ? calc?.nodes.get(p.node) : null;
       const status = p.node == null ? 'infra' : cn && cn.coverage < 1 - ctx.EPS ? 'prod short' : 'prod';
       const recipe = cn ? db.entryLabel({ b, r: cn.r, creature: cn.n.c ? db.creatures.get(cn.n.c) : null }) : '';
-      const carried = isArm(b) ? armItem(p) : null; // transporter arms show what they carry
+      const carried = carries(b) ? armItem(p) : null; // arms, drone bases, item antennas show what they carry
       const what = recipe || (carried != null ? db.itemName(carried) : '');
       const label = b ? `${db.buildingName(b)}${what ? `\n${what}` : ''}` : `#${p.b}`;
       // production shows what it makes; everything else its own picture
@@ -157,13 +162,14 @@ export function createArch(ctx) {
       const size = Math.max(8, Math.min(96, Math.floor(Math.min(w, h) * 0.8)));
       const icon = carried != null ? ctx.iconHtml('items', carried, size)
         : out != null && !cn.gen ? ctx.iconHtml('items', out, size) : ctx.iconHtml('buildings', p.b, size);
-      const extra = (p.id === selected ? ' selected' : '') + (sel?.twin === p.id ? ' twin' : '') + (isArm(b) ? ' arm' : '')
-        + (p.fixed ? ' fixed' : '');
+      const extra = (p.id === selected ? ' selected' : '') + (sel?.twin === p.id || sel?.targets?.includes(p.id) ? ' twin' : '')
+        + (carries(b) ? ' arm' : '') + (p.fixed ? ' fixed' : '');
       const title = p.fixed ? `${label}\n${tk('UI_ARCH_FIXED')}` : label;
       blds += `<div class="pb ${status}${extra}" data-p="${esc(p.id)}"${p.node != null ? ` data-node="${esc(p.node)}"` : ''}
         style="left:${(c.x + r.x0) * U}px;top:${-(c.y + r.y1) * U}px;width:${w}px;height:${h}px" title="${esc(title)}">${icon}</div>`;
     }
-    el.blds.innerHTML = blds + '<div id="arch-ghost" hidden></div>';
+    el.blds.innerHTML = blds + renderMagnets() + '<div id="arch-ghost" hidden></div>';
+    el.root.classList.toggle('picking', !!picking);
     ghost = el.blds.querySelector('#arch-ghost');
     labels += renderLinks(sel);
     el.labels.innerHTML = labels;
@@ -185,6 +191,16 @@ export function createArch(ctx) {
       const a = pxCenter(p);
       const b = pxCenter(t);
       svg += `<line class="bridge" x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" marker-end="url(#arch-arrow)"/>`;
+    }
+    for (const p of st.placed) { // drone bases: a line to every target container
+      if (p.b !== db.droneBaseId || !live(p)) continue;
+      const a = pxCenter(p);
+      for (const id of p.targets ?? []) {
+        const t = byId.get(id);
+        if (!live(t)) continue;
+        const b = pxCenter(t);
+        svg += `<line class="drone${p.id === sel?.id ? ' on' : ''}" x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" marker-end="url(#arch-arrow)"/>`;
+      }
     }
     if (sel?.node != null && live(sel)) {
       const a = pxCenter(sel);
@@ -214,29 +230,88 @@ export function createArch(ctx) {
     return icons;
   }
 
-  /** Item a transporter carries (set on its input arm). */
+  /** Magnetoids: a small arrow between the two slots they link (origin → target), clickable. */
+  function renderMagnets() {
+    const st = S();
+    const byId = new Map(st.placed.map(p => [p.id, p]));
+    let html = '';
+    for (const m of st.magnets ?? []) {
+      const a = byId.get(m.from); const c = byId.get(m.to);
+      const isl = a && st.groups[a.g];
+      if (!c || !isl || isl.q == null) continue;
+      const cc = hexCenter(isl.q, isl.r);
+      const s1 = magnetSlotAt(db.buildings.get(a.b), cc.x + a.x, cc.y + a.y, m.fs);
+      const s2 = magnetSlotAt(db.buildings.get(c.b), cc.x + c.x, cc.y + c.y, m.ts);
+      if (!s1 || !s2) continue;
+      const deg = Math.atan2(-(s2.y - s1.y), s2.x - s1.x) * 180 / Math.PI;
+      const title = `${tk('UI_MAGNET')}: ${db.buildingName(db.buildings.get(a.b))} → ${db.buildingName(db.buildings.get(c.b))}`;
+      html += `<div class="mg${m.id === selMagnet ? ' selected' : ''}" data-mg="${esc(m.id)}" title="${esc(title)}"
+        style="left:${(s1.x + s2.x) / 2 * U}px;top:${-(s1.y + s2.y) / 2 * U}px;transform:translate(-50%,-50%) rotate(${deg}deg)">➜</div>`;
+    }
+    return html;
+  }
+
+  /** Item a transporter carries (set on its input arm); drone bases and item antennas keep their own. */
   function armItem(p) {
     if (p.item != null) return p.item;
     return S().placed.find(q => q.id === p.twin)?.item ?? null;
   }
 
-  /** Small panel for a transporter: which item it carries. */
+  /** Small panel for a building that isn't a calculator card: what it carries, a drone base's targets, magnetoids. */
   function armCardHtml(p) {
-    const cur = armItem(p);
-    const options = [`<option value="">${esc(tk('UI_CHOOSE_ITEM'))}</option>`,
-      ...db.itemsByName.map(it => `<option value="${it.id}"${it.id === cur ? ' selected' : ''}>${esc(db.itemName(it.id))}</option>`)].join('');
-    return `<div class="node arm-card"><div class="node-head">${ctx.iconHtml('buildings', p.b, 24)}<span class="node-title">${esc(db.buildingName(db.buildings.get(p.b)))}</span></div>
-      <div class="node-body"><label class="opt">${esc(tk('UI_ARM_ITEM'))}<select data-act="arm-item" data-p="${esc(p.id)}">${options}</select></label></div></div>`;
+    const b = db.buildings.get(p.b);
+    return `<div class="node arm-card"><div class="node-head">${ctx.iconHtml('buildings', p.b, 24)}<span class="node-title">${esc(db.buildingName(b))}</span></div>
+      <div class="node-body">${logisticsHtml(p)}</div></div>`;
+  }
+
+  /** Item select, drone targets and the magnetoid button for building p (also under a calculator card). */
+  function logisticsHtml(p) {
+    const b = db.buildings.get(p.b);
+    const st = S();
+    let html = '';
+    if (carries(b)) {
+      const cur = armItem(p);
+      const options = [`<option value="">${esc(tk('UI_CHOOSE_ITEM'))}</option>`,
+        ...db.itemsByName.map(it => `<option value="${it.id}"${it.id === cur ? ' selected' : ''}>${esc(db.itemName(it.id))}</option>`)].join('');
+      html += `<label class="opt">${esc(tk(isArm(b) ? 'UI_ARM_ITEM' : 'UI_CARRIED_ITEM'))}<select data-act="arm-item" data-p="${esc(p.id)}">${options}</select></label>`;
+    }
+    if (p.b === db.droneBaseId) {
+      const rows = (p.targets ?? []).map(id => {
+        const t = st.placed.find(q => q.id === id);
+        if (!t) return '';
+        return `<div class="logi-row">${ctx.iconHtml('buildings', t.b, 18)}<span>${esc(db.buildingName(db.buildings.get(t.b)))} · ${esc(st.groups[t.g]?.title ?? '')}</span>
+          <button class="icon" data-act="drone-untarget" data-p="${esc(p.id)}" data-t="${esc(id)}" title="${esc(tk('UI_DRONE_UNTARGET'))}">×</button></div>`;
+      }).join('');
+      html += `<div class="logi"><div class="logi-head">${esc(tk('UI_DRONE_TARGETS'))}</div>${rows || `<div class="logi-row muted">${esc(tk('UI_DRONE_NO_TARGETS'))}</div>`}
+        <button class="logi-btn${picking?.kind === 'target' ? ' on' : ''}" data-act="drone-pick" data-p="${esc(p.id)}">${esc(tk('UI_DRONE_ADD_TARGET'))}</button></div>`;
+    }
+    if (b?.magnetSlots && !p.fixed) {
+      html += `<button class="logi-btn${picking?.kind === 'magnet' ? ' on' : ''}" data-act="magnet-pick" data-p="${esc(p.id)}"
+        title="${esc(tk('UI_MAGNET_PICK_TITLE'))}">${esc(tk('UI_MAGNET_PICK'))}</button>`;
+    }
+    return html;
   }
 
   el.card.addEventListener('change', ev => {
     const t = ev.target.closest('[data-act="arm-item"]');
     if (t) ctx.ops.setArmItem(t.dataset.p, t.value === '' ? null : +t.value);
   });
+  el.card.addEventListener('click', ev => {
+    const t = ev.target.closest('[data-act="drone-pick"], [data-act="magnet-pick"], [data-act="drone-untarget"]');
+    if (!t) return;
+    if (t.dataset.act === 'drone-untarget') { ctx.ops.setDroneTarget(t.dataset.p, t.dataset.t, false); return; }
+    const kind = t.dataset.act === 'drone-pick' ? 'target' : 'magnet';
+    picking = picking?.kind === kind ? null : { kind, from: t.dataset.p };
+    if (picking) ctx.toast(tk(kind === 'target' ? 'UI_DRONE_PICK_HINT' : 'UI_MAGNET_PICK_HINT'));
+    render();
+  });
 
-  /** The selected building's card from the calculator (or a transporter's item), next to it on screen. */
+  /** The selected building's card from the calculator (or its logistics panel), next to it on screen. */
   function renderCard(sel) {
-    const html = sel?.node != null ? ctx.cardHtml(sel.node) : sel && isArm(db.buildings.get(sel.b)) ? armCardHtml(sel) : '';
+    const b = sel && db.buildings.get(sel.b);
+    const logi = sel && (carries(b) || b?.magnetSlots) ? logisticsHtml(sel) : '';
+    const html = sel?.node != null ? ctx.cardHtml(sel.node) + (logi ? `<div class="node arm-card logi-under"><div class="node-body">${logi}</div></div>` : '')
+      : logi ? armCardHtml(sel) : '';
     el.card.innerHTML = html;
     el.card.hidden = !html;
     placeCard();
@@ -331,10 +406,32 @@ export function createArch(ctx) {
       ctx.ops.newIsland({ x: ev.clientX, y: ev.clientY }, { q: +slot.dataset.q, r: +slot.dataset.r });
       return true;
     }
+    const mgEl = ev.target.closest('.mg');
+    if (mgEl && !picking) {
+      selMagnet = mgEl.dataset.mg;
+      selected = null;
+      render();
+      return true;
+    }
     const pbEl = ev.target.closest('.pb');
+    if (picking) {
+      const pick = picking;
+      picking = null;
+      const p = pbEl && S().placed.find(x => x.id === pbEl.dataset.p);
+      if (p && pick.kind === 'target') {
+        if (db.droneTarget(db.buildings.get(p.b)) && p.id !== pick.from) ctx.ops.setDroneTarget(pick.from, p.id, true);
+        else ctx.toast(tk('UI_DRONE_BAD_TARGET'), true);
+      } else if (p && pick.kind === 'magnet') {
+        const err = ctx.ops.addMagnet(pick.from, p.id);
+        if (err) ctx.toast(err, true);
+      }
+      render();
+      return true;
+    }
     if (pbEl) {
       const p = S().placed.find(x => x.id === pbEl.dataset.p);
       if (!p) return false;
+      selMagnet = null;
       select(p.id); // re-renders: take the new element
       if (p.fixed) return true; // NPCs, landmarks: select only
       const elem = el.blds.querySelector(`.pb[data-p="${CSS.escape(p.id)}"]`) ?? pbEl;
@@ -405,13 +502,24 @@ export function createArch(ctx) {
   }
 
   function select(id) {
+    if (picking && picking.from !== id) picking = null;
     if (selected === id) return;
     selected = id;
     render();
   }
 
   function keyDown(ev) {
-    if (ev.key === 'Escape') { if (armed) disarm(); else select(null); return true; }
+    if (ev.key === 'Escape') {
+      if (picking) { picking = null; render(); } else if (armed) disarm(); else { selMagnet = null; select(null); }
+      return true;
+    }
+    if ((ev.key === 'Delete' || ev.key === 'Backspace') && selMagnet) {
+      ev.preventDefault();
+      const id = selMagnet;
+      selMagnet = null;
+      ctx.ops.removeMagnet(id);
+      return true;
+    }
     if ((ev.key === 'Delete' || ev.key === 'Backspace') && selected) {
       ev.preventDefault();
       if (S().placed.find(p => p.id === selected)?.fixed) return true;

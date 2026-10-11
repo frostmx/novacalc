@@ -2,283 +2,148 @@ TITLE
 NovaCalc: production calculator and island planner (web tool)
 
 DESCRIPTION (guide summary)
-A free browser tool for planning Nova Lands factories: import your save, see every chain with real rates, fix
-shortages, plan goals like the Black Hole Pyramid, lay out islands, buildings and transporters exactly as in
-the game, and write the new layout back into your save.
+A free browser tool for Nova Lands: import your save, see every production chain with real rates, plan the Black Hole Pyramid and other goals, lay out your islands like on the game map and write the new layout back into your save.
 
 GUIDE ICON / PREVIEW IMAGE
 images/00-cover.png
 
-Each section below starts with "=== SECTION: <title> ===". Paste the title into the section title field and
-everything under it into the section body. The [previewimg] tags refer to the images already uploaded to the guide.
+Each section below starts with "=== SECTION: <title> ===". Paste the title into the section title field and everything under it into the section body. One paragraph or list item is one line, so Steam keeps the text as is.
 
 
 === SECTION: What is NovaCalc ===
 
-[b]NovaCalc[/b] is a free production chain calculator and island planner for Nova Lands. It runs in your web
-browser — nothing to install:
+[b]NovaCalc[/b] is a free production calculator and island planner for Nova Lands. It runs in the browser, nothing to install.
 
 [h1][url=https://frostmx.github.io/novacalc/]► Open NovaCalc[/url][/h1]
 
 [list]
-[*][b]Calculator[/b] — put building cards on a board, connect outputs to inputs and see exact rates, shortages
-and surpluses.
-[*][b]Import from save[/b] — load your world and get your whole factory, with your skills and gems, in one click.
-[*][b]Goals[/b] — choose a delivery target (Black Hole Pyramid, Nova Gateway, …) and let it build the chain.
-[*][b]Architect[/b] — your islands as on the game map, buildings at their real size and position, transporters
-between islands.
-[*][b]Save editor[/b] — move, add and delete buildings on that map, change recipes, then download your world
-with the changes.
+[*][b]Calculator:[/b] building cards linked output to input, with exact rates, shortages and surpluses.
+[*][b]Import from save:[/b] your whole factory on the board in one click, with your skills and gems.
+[*][b]Goals:[/b] pick the Black Hole Pyramid, Nova Gateway or your own list and get the chain built for you.
+[*][b]Architect:[/b] your islands as on the game map, buildings at their real size and place, transporters between islands.
+[*][b]Save editor:[/b] change that layout and download your world with the changes.
 [/list]
 
-All numbers come from the game files and were checked against the game code and timed in-game tests — not
-copied from the wiki.
-
-Your save never leaves your computer: the page reads it in the browser and sends it nowhere.
+The numbers come from the game files and were checked against the game code and timed in game, not taken from the wiki. Your save stays on your computer: the page reads it locally and sends it nowhere.
 
 [previewimg=48055339;sizeThumb,floatLeft;01-import-by-island.png][/previewimg]
 
 
 === SECTION: Quick start: import your factory ===
 
-[olist]
-[*]Open the site and click [b]Import from save[/b] (blue button at the top).
-[*]Pick your world file. On Windows it is here (paste the path into the file dialog):
+Click [b]Import from save[/b] and pick your world file:
 [code]%USERPROFILE%\AppData\LocalLow\BEHEMUTT\Nova Lands\Worlds\1.1.0\WORLD000.dat[/code]
-The game writes it when you sleep and on "Save and exit", so save first if you want the latest state.
-[*]Done. Every production building appears on the board, merged into one card per island and setup
-("Advanced Furnace ×4, Iron Ingot, Super Lubricant"), linked into chains. Your learned skills and the gems in your
-Gem Overclocker are applied too.
-[/olist]
+The game writes it when you sleep and on "Save and exit".
 
-A short message tells you how many buildings were placed and which ones were left out (the Workbench and the
-Animal Cloning Machine are manual tools and are skipped).
+Every production building lands on the board, grouped into one card per island and setup ("Advanced Furnace ×4, Iron Ingot, Super Lubricant") and linked into chains. Learned skills and the gems in your Gem Overclocker are applied. The Workbench and the Animal Cloning Machine are skipped: they are manual tools.
 
-The board is kept in your browser between visits. [b]Export JSON[/b] / [b]Import JSON[/b] save and load it as a
-file, [b]Clear[/b] starts over.
+The board is kept in the browser. [b]Export JSON[/b] saves it to a file, [b]Import JSON[/b] loads it back.
 
 
-=== SECTION: Cards, ports and links ===
+=== SECTION: Cards and links ===
 
-Every card is a group of identical buildings running one recipe.
+A card is a group of identical buildings running one recipe: the count, the recipe, the real cycle time with all bonuses (hover the speed to see what adds up), lubricant, fertilizer or watering where the building has them, inputs on the left and outputs on the right.
 
 [previewimg=48055341;sizeFull,floatLeft;02-cards-and-producer-menu.png][/previewimg]
 
-[list]
-[*][b]Header[/b] — building, how many of them (− / + or type a number), × removes the card.
-[*][b]Recipe[/b] — what the buildings make. Farms choose a plant, the Animal Barn a creature, generators show the
-energy they produce.
-[*][b]Cycle and speed[/b] — real cycle time with all bonuses. Hover the speed to see where it comes from
-(building speed, skills, gem, lubricant).
-[*][b]Options[/b] — lubricant, fertilizer, watering, number of creatures, depending on the building.
-[*][b]Ports[/b] — inputs on the left, outputs on the right, with the rate for the whole card.
-[/list]
+Drag from one port to another to link two cards. Drag a port into empty space or click the [b]+[/b] next to it to get the buildings that make or use that item: the one you pick comes already linked and sized to cover the missing amount.
 
-[h3]Connecting[/h3]
-[list]
-[*]Drag from a port to a port of another card to link them.
-[*]Drag from a port onto empty space, or click the small [b]+[/b] next to it, to get a list of buildings that
-make (or use) that item. Pick one and it is added already linked and sized to cover the missing amount.
-[*]Click a link and press Delete to remove it.
-[/list]
-
-[h3]Colours[/h3]
-[list]
-[*][b]Green[/b] port or link — balanced.
-[*][b]Red[/b] — short: the number shows how much is missing. "Inputs cover 66%" on a card means it can only
-run at that share of its speed.
-[*][b]Orange[/b] — surplus that nothing uses.
-[*][b]Grey[/b] — not connected (treated as bought in / brought by hand).
-[/list]
-
-[b]Rate[/b] at the top switches everything between per second, per minute and per hour.
+Green means balanced, red short (the number is how much is missing), orange a surplus nothing uses, grey not connected. "Inputs cover 66%" on a card means it only runs at 66% of its speed.
 
 
 === SECTION: Summary ===
 
-The panel on the right totals the whole board: buildings, energy used / produced, and every item made and used,
-worst shortages first.
-
-[list]
-[*][b]Hover an item[/b] — cards that make it are outlined green, cards that use it orange, everything else
-fades.
-[*][b]Click an item[/b] — the view zooms to exactly those cards.
-[/list]
+The right panel totals the board: buildings, energy and every item made and used, worst shortages first. Hover an item to light up the cards that make it (green) and use it (orange); click it to zoom to them.
 
 [previewimg=48055342;sizeFull,floatLeft;03-summary-highlight.png][/previewimg]
 
 
 === SECTION: Bonuses: skills and gems ===
 
-[b]Bonuses[/b] (top bar) lists the skills and upgrades that change production, and one gem slot per Gem
-Overclocker group. Import from save fills them in; you can also tick and change them by hand to see what a skill
-or a better gem would give.
+[b]Bonuses[/b] lists the skills and upgrades that change production and a gem slot for each Gem Overclocker group. Import fills them in; tick them by hand to see what a skill or a better gem would give.
 
 [previewimg=48055343;sizeFull,floatLeft;04-bonuses.png][/previewimg]
 
-What is taken into account:
 [list]
-[*]Building speed: [i]base speed × (1 + skills + gem + lubricant)[/i]. Furnaces, refineries and assemblers have a
-base speed of 0.8, not 1.
-[*]Lubricants multiply as the game says (×3, ×4, ×16) and are used up in real time while the building works.
-[*]Agriculture-type skills add extra output per cycle.
-[*]Farms: fertilizer speeds growth, water is needed for growing, renewable plants regrow without water.
-[*]Generators: fuel lasts longer with the fuel skills, solar panels double with Solar Power.
-[*]Energy is shared per island, exactly like in the game.
+[*]Speed = base speed × (1 + skills + gem + lubricant). Furnaces, refineries and assemblers have a base speed of 0.8.
+[*]Lubricant counts as ×3, ×4 or ×16 and burns in real time while the building works.
+[*]Fertilizer speeds up growth; plants need water to grow, renewable ones regrow without it.
+[*]Fuel skills make fuel last longer, Solar Power doubles solar panels.
+[*]Energy is shared per island, as in the game.
 [/list]
 
 
 === SECTION: Goals and "Build chain" ===
 
-Open [b]Goals[/b] at the top of the left list. Pick a delivery point (Black Hole Pyramid stages, Nova Gateway
-stages, Kruwak's Spaceship) or a [b]Custom goal[/b] with your own items, and say how often you want it
-(for example "every 10 h").
+Open [b]Goals[/b] at the top of the left list, pick a Black Hole Pyramid or Nova Gateway stage, Kruwak's Spaceship or a [b]Custom goal[/b], and say how often you want it ("every 10 h").
 
-Click [b]Build chain[/b] on the goal card: the calculator adds every building needed, all the way down to raw
-resources, reusing the buildings already in the chain. It prefers the fastest recipe that does not eat packages
-(Mega recipes consume 100-item packages and are rarely worth it).
-
-Drills, farms, creatures and manual crafting are left to you: their products are listed as raw resources in the
-message.
+[b]Build chain[/b] on the goal card adds every building needed down to raw resources, reusing what is already there. It picks the fastest recipe that doesn't eat packages: Mega recipes take 100-item packages and are rarely worth it. Drills, farms and creatures are left to you; their products show up as raw resources.
 
 [previewimg=48055344;sizeFull,floatLeft;05-goal-build-chain.png][/previewimg]
 
 
 === SECTION: Islands on the board ===
 
-Imported cards keep their island. The top bar has two views:
-[list]
-[*][b]By island[/b] — each island in its own frame with its energy balance.
-[*][b]Whole chain[/b] — one production chain, islands not separated (each card still shows its island).
-[*][b]Arrange[/b] — lays out the current view automatically.
-[/list]
-
-Each view remembers its own card positions, so untangling one does not mess up the other.
+[b]By island[/b] puts each island in its own frame with its energy balance, [b]Whole chain[/b] shows one chain with the island written on every card. Each view keeps its own layout; [b]Arrange[/b] lays out the current one again.
 
 [previewimg=48055345;sizeFull,floatLeft;06-whole-chain.png][/previewimg]
 
-In the island view:
-[list]
-[*][b]+ Island[/b] adds an empty island frame.
-[*]Drop a card into another island's frame to move it there. Dragging it anywhere else keeps it on its island
-(the frame just grows). Hold [b]Alt[/b] while dropping outside every frame to take it off the islands.
-[*]Double-click an island title to rename it, × deletes the island (its cards stay).
-[*]Links between different islands are dashed.
-[/list]
+To move a card to another island, drop it into that island's frame. [b]+ Island[/b] adds an empty one; double-click a title to rename it. Links between islands are dashed.
 
 
 === SECTION: Architect: your islands as in the game ===
 
-Switch to [b]Architect[/b] at the top left. Your islands are shown as on the game's map, in their biome
-colours, and every building of your save stands where it stands in the game, at its real size. Production
-buildings show the item they make; storage, NPCs and other buildings are grey.
+[b]Architect[/b] (top left) shows your islands as on the game map, with every building where it stands in the game and at its real size. Production buildings show what they make.
 
 [previewimg=48055346;sizeFull,floatLeft;07-architect-map.png][/previewimg]
 
-[list]
-[*][b]Add an island[/b]: click an empty hexagon with a "+" and choose the island type.
-[*][b]Place a building[/b]: pick it in the left list, then click on an island. A preview shows where it goes
-(red = blocked); it snaps to the game's grid. Shift-click to keep placing, Esc or right click to stop.
-[*][b]Move[/b]: drag a building. [b]Delete[/b]: select it and press Delete.
-[*][b]Rename / delete an island[/b]: double-click its ground / click × next to its name.
-[/list]
+Pick a building in the left list and click on an island to place it: it snaps to the game's grid, red means it doesn't fit. Shift-click places more, Esc stops. Drag to move, Delete to remove. An empty hexagon with a "+" becomes a new island.
 
-The architect and the calculator are one plan: every building on an island belongs to its card on the board.
-Placing a building adds one to the card, deleting removes one, moving it to another island moves it to that
-island's card. If a card has more buildings than are placed, they wait in [b]Not placed[/b] at the top of the
-left list — click there and place them.
+The map and the calculator are the same plan: placing a building adds one to its card, deleting takes one away. Buildings a card has but the map doesn't wait under [b]Not placed[/b] at the top of the list.
 
 [previewimg=48055350;sizeFull,floatLeft;10-architect-placing.png][/previewimg]
 
-
-=== SECTION: Editing from the map ===
-
-Click a building to select it:
-[list]
-[*]Lines go to the buildings that supply it ([b]green[/b]) and that take its output ([b]orange[/b]), with the
-item on each line.
-[*]Its card from the calculator opens next to it: change the recipe, lubricant or count right there.
-[*]Click a port (the dot on the left or right of the card) to choose a producer or consumer for that item — the
-new buildings are placed straight away with your next clicks.
-[*]Double-click a building to jump to its card in the calculator.
-[/list]
+Click a building to see lines to its suppliers (green) and consumers (orange) and its card right next to it, where you can change the recipe, lubricant or count. Clicking a port of that card lets you pick a new producer and place it straight away.
 
 [previewimg=48055347;sizeFull,floatLeft;08-architect-selected-building.png][/previewimg]
 
 
 === SECTION: Transporters ===
 
-A transporter is a pair of arms on the shores of two neighbouring islands. In the architect:
-[list]
-[*]Pick [b]Transporter Arm[/b] under Infrastructure and click near an island's shore — the arm snaps to the
-nearest shore slot and its partner appears on the island across.
-[*]Drag an arm along the shore to move the pair; across another edge the partner moves to that neighbour.
-[*]Each arm shows the item it carries; select an arm to change the item.
-[/list]
+Pick [b]Transporter Arm[/b] under Infrastructure and click near a shore: the arm takes the nearest slot and its partner appears on the island across. Drag an arm along the shore to move the pair. Select an arm to choose what it carries.
 
 [previewimg=48055349;sizeFull,floatLeft;09-transporters.png][/previewimg]
 
-Transporters count in the calculation: a link between cards on different islands only carries what the
-transporters for that item can move — [b]60 items per minute per transporter[/b] (measured in game), also
-through other islands. A link that no transporter serves carries nothing and is drawn as a red dashed line;
-in the calculator, hover it to see which transporter is missing.
+Links between islands only carry what the transporters can move: 60 items per minute each (measured in game), also through other islands. A link no transporter serves is a red dashed line.
 
 
-=== SECTION: Save editor: change your world ===
+=== SECTION: Save editor ===
 
 [h1]⚠ USE AT YOUR OWN RISK — ALWAYS BACK UP YOUR SAVE! ⚠[/h1]
 
-After [b]Import from save[/b] the architect is also a save editor: what you change on the map can be written back
-into your world.
+After [b]Import from save[/b] the changes you make in the architect can go back into your world: moved, new and deleted buildings, recipes, transporters. An Advanced Farm moves with its plots and plants. Items left from an old recipe drop on the ground when the world loads.
 
-[list]
-[*]Move buildings, also to another island (an Advanced Farm takes its plots and plants along), delete them, place
-new ones, lay and move transporters.
-[*]Change a building's recipe in its card. Items left inside for the old recipe drop on the ground when the world
-loads, nothing is lost.
-[*]Rocks, bushes, trees and ore veins are shown on the islands. A building can't be placed on top of them (red
-outline) — drag them out of the way instead.
-[/list]
+Rocks, bushes and trees are on the map too. You can't build on top of them, but you can drag them aside.
 
 [previewimg=48058158;sizeFull,floatLeft;11-save-editor-rocks.png][/previewimg]
 
-[h3]Rules[/h3]
-[list]
-[*]New buildings are free: no resources are taken.
-[*]Only building types your save already has can be placed. The others are greyed out in the list: build one in
-the game first.
-[*]NPCs, shops, landmarks and the special islands (Witch House, Ruins, …) can't be moved or changed.
-[*]Only buildings standing on the map are written. Buildings a card lists as "not placed" and islands you added
-in NovaCalc stay out of the save.
-[/list]
+New buildings are free, but only types your save already has can be placed; the rest are greyed out. NPCs, shops, landmarks and the special islands stay as they are.
 
-[h3]Putting the changes into the game[/h3]
+To get the changes into the game:
 [olist]
-[*]Click [b]Download save[/b] (next to Import from save). A summary lists what will change: new, moved and
-deleted buildings, recipes, transporters, rocks. Confirm, and the file is downloaded under its own name
-(WORLD000.dat).
-[*]In the game, go back to the main menu: the game writes the file again when you sleep or save and exit.
-[*]Back up the old file from
-[code]%USERPROFILE%\AppData\LocalLow\BEHEMUTT\Nova Lands\Worlds\1.1.0\[/code]
-then put the downloaded one in its place.
+[*]Click [b]Download save[/b] and check the list of changes.
+[*]Go to the main menu in the game.
+[*]Back up your old WORLD000.dat and put the downloaded file in its place.
 [*]Load the world.
 [/olist]
-
-NovaCalc never writes to your disk: replacing the file is up to you, so always keep a backup. If something looks
-wrong, put the backup back.
 
 
 === SECTION: Good to know ===
 
 [list]
-[*][b]Drills[/b] mine 1 item per 0.11 s (545/min) and use one Titanium Drill Bit per 225 s of work. What a drill
-can mine depends on the island; a drill on the wrong island is marked red. The game gives at most one item per
-frame, so at 60 FPS it is closer to 514/min (shown in the tooltip).
-[*][b]Mega recipes[/b] eat packages (1 package = 100 items): fast per building, very expensive in materials.
-[*][b]Gem Overclocker[/b]: gem slot 1, 2, 3, 4 boosts its own building group, as listed in Bonuses.
-[*]The board is stored in your browser only. Use [b]Export JSON[/b] to back it up or move it to another PC.
+[*]A drill mines one item per 0.11 s (545/min, about 514 at 60 FPS) and uses a Titanium Drill Bit every 225 s. What it can mine depends on the island.
+[*]Gem slots 1–4 of the Gem Overclocker each boost their own group of buildings, as listed in Bonuses.
+[*]The board lives in your browser only: use [b]Export JSON[/b] to keep a copy.
 [/list]
 
-NovaCalc is a fan project and is not affiliated with BEHEMUTT. The source code is on GitHub:
-[url=https://github.com/frostmx/novacalc]github.com/frostmx/novacalc[/url] — bug reports and ideas are welcome
-there or in the comments below.
+NovaCalc is a fan project, not affiliated with BEHEMUTT. Source code: [url=https://github.com/frostmx/novacalc]github.com/frostmx/novacalc[/url]. Bug reports and ideas are welcome there or in the comments.

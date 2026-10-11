@@ -176,10 +176,14 @@ function goalNode(n) {
   return { n, goal: true, inputs, outputs: new Map() };
 }
 
+/** Capacity of a drone route: not limited (a link carried by drones shows as such). */
+export const DRONE_CAP = 1e9;
+
 /**
  * Transporters between islands (state.placed): an input arm carrying `item` on island A with its twin on B moves up
  * to db.transporterPerMin of it per minute from A to B. cap(item, A, B) = max flow through that network (a route
  * may pass other islands; routes between different island pairs are not charged against each other).
+ * Drone bases add routes from their island to their targets' islands (DRONE_CAP).
  * Only islands placed on the hex map are bound by it (`enforced`); cards without an island are not.
  */
 export function transportNetwork(state, db) {
@@ -190,6 +194,14 @@ export function transportNetwork(state, db) {
     const t = byId.get(p.twin);
     if (!t || t.g === p.g || !state.groups?.[p.g] || !state.groups?.[t.g]) continue;
     (arcs.get(p.item) ?? arcs.set(p.item, []).get(p.item)).push([p.g, t.g, db.transporterPerMin]);
+  }
+  // drone bases carry their item to target containers on other islands; their rate is not limited here
+  for (const p of state.placed ?? []) {
+    if (p.b !== db.droneBaseId || p.item == null || !state.groups?.[p.g]) continue;
+    for (const id of p.targets ?? []) {
+      const t = byId.get(id);
+      if (t && t.g !== p.g && state.groups?.[t.g]) (arcs.get(p.item) ?? arcs.set(p.item, []).get(p.item)).push([p.g, t.g, DRONE_CAP]);
+    }
   }
   const cache = new Map();
   function cap(item, a, b) {

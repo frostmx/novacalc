@@ -1,8 +1,8 @@
 import { loadLocale, tk, applyStaticTexts } from './i18n.js';
 import { loadData } from './data.js';
-import { compute, nodeSpeed, portStatus, outputAmount, outputBonus, isWatered, EPS } from './calc.js';
+import { compute, nodeSpeed, portStatus, outputAmount, outputBonus, isWatered, EPS, DRONE_CAP } from './calc.js';
 import { decodeSave, readProfile, readFactory, readLayout } from './save.js';
-import { hexAt, hexCenter, hexSlots, TRANSPORTER_SLOTS, slotPair, slotAt, footprintOf } from './world.js';
+import { hexAt, hexCenter, hexSlots, TRANSPORTER_SLOTS, slotPair, slotAt, footprintOf, magnetPair } from './world.js';
 import { createArch } from './arch.js';
 import { readTree, writeTree, applyLayout, editableBuilding } from './savewrite.js';
 
@@ -71,13 +71,15 @@ function fmtTime(sec) {
 // the input arm keeps the carried `item`. Buildings from a save keep its id as `uid`; `fixed` ones (NPCs, shops,
 // landmarks, anything on a premade island) cannot be moved or deleted.
 // props = rocks, bushes, trees of a save { id, uid, b (prop id), g, x, y }; they can be moved, buildings can't cover them.
+// Drone bases and item antennas keep their `item` too; a drone base has `targets` (placed ids of containers, any island).
+// magnets = magnetoids { id, uid?, from, to (placed ids, same island), fs, ts (their slot indices) }: items go from → to.
 // saveInfo = the imported save { file, name, day, hash, types (building ids it has a record of) }: with it the
 // architect's layout can be written back into that save (savewrite.js).
 
 const emptyMods = () => ({ skills: [], gems: [] });
 const emptyState = () => ({
   version: 1, unit: 'min', view: { x: 40, y: 40, z: 1 }, nodes: [], edges: [], mods: emptyMods(), groups: {},
-  mode: 'calc', archView: null, placed: [], props: [], saveInfo: null,
+  mode: 'calc', archView: null, placed: [], props: [], magnets: [], saveInfo: null,
   // calculator view: cards grouped in island frames, or one chain; each keeps its own card positions
   boardView: 'islands', layouts: {},
 });
@@ -102,11 +104,12 @@ function setState(s) {
   state.groups = state.groups ?? {};
   state.placed = Array.isArray(state.placed) ? state.placed.filter(p => db.buildings.has(p.b)) : [];
   state.props = Array.isArray(state.props) ? state.props.filter(p => db.props.has(p.b)) : [];
+  state.magnets = Array.isArray(state.magnets) ? state.magnets : [];
   if (state.saveInfo && storedSave()?.hash !== state.saveInfo.hash) state.saveInfo = null; // that save is gone
   if (!state.archView) { state.archView = { x: 40, y: 40, z: 0.3 }; archNeedsFit = true; }
   // drop nodes whose building/recipe no longer exist in the data
   state.nodes = state.nodes.filter(n => isGoal(n) || (db.buildings.has(n.b) && db.recipes.has(n.r)));
-  const ids = [...state.nodes, ...state.edges, ...state.placed, ...state.props, ...Object.keys(state.groups).map(id => ({ id }))]
+  const ids = [...state.nodes, ...state.edges, ...state.placed, ...state.props, ...state.magnets, ...Object.keys(state.groups).map(id => ({ id }))]
     .map(x => parseInt(String(x.id).slice(1), 10)).filter(Number.isFinite);
   nextId = (ids.length ? Math.max(...ids) : 0) + 1;
   pruneEdges();
@@ -424,8 +427,9 @@ function transportTitle(ce) {
   const item = db.itemName(ce.e.from[1]);
   const a = state.groups[findNode(ce.e.from[0])?.g]?.title ?? '';
   const b = state.groups[findNode(ce.e.to[0])?.g]?.title ?? '';
-  return ce.transport.cap <= EPS ? tk('UI_EDGE_NO_TRANSPORT', item, a, b)
-    : tk('UI_EDGE_TRANSPORT', item, a, b, `${fmtRate(ce.transport.cap)}${unitLabel()}`);
+  if (ce.transport.cap <= EPS) return tk('UI_EDGE_NO_TRANSPORT', item, a, b);
+  if (ce.transport.cap >= DRONE_CAP) return tk('UI_EDGE_DRONE', item, a, b);
+  return tk('UI_EDGE_TRANSPORT', item, a, b, `${fmtRate(ce.transport.cap)}${unitLabel()}`);
 }
 
 /** Island frames around their nodes (derived from node positions, so they follow drags). */
@@ -719,6 +723,14 @@ function syncPlaced() {
     seen.set(n.id, k);
     return k <= n.count;
   });
+  const byId = new Map(state.placed.map(p => [p.id, p]));
+  for (const p of state.placed) if (p.targets) p.targets = p.targets.filter(id => byId.has(id) && id !== p.id);
+  // a magnetoid needs both buildings, on one island, with a Magnetoid Antenna
+  const antennas = new Set(state.placed.filter(p => p.b === db.magnetAntennaId).map(p => p.g));
+  state.magnets = (state.magnets ?? []).filter(m => {
+    const a = byId.get(m.from); const b = byId.get(m.to);
+    return a && b && a.g === b.g && antennas.has(a.g);
+  });
 }
 
 const SETUP_KEYS = ['b', 'r', 'c', 'creatures', 'lub', 'fert', 'water'];
@@ -827,6 +839,7 @@ const placeOps = {
   move(id, g, x, y) {
     const p = state.placed.find(q => q.id === id);
     if (!p) return;
+    state.magnets = state.magnets.filter(m => m.from !== id && m.to !== id); // its magnetoids no longer reach
     if (p.g !== g && p.node != null) {
       const n = findNode(p.node);
       if (n) p.node = transferOne(n, g).id;
@@ -847,9 +860,14 @@ const placeOps = {
     commit();
     return a.id;
   },
-  /** What a transporter carries: kept on the input arm (as in saves), shown on both. */
+  /** What a transporter carries: kept on the input arm (as in saves), shown on both; drone bases and item antennas keep their own. */
   setArmItem(id, item) {
     const p = state.placed.find(q => q.id === id);
+    if (p && !p.twin) {
+      if (item == null) delete p.item; else p.item = item;
+      commit();
+      return;
+    }
     const t = p && state.placed.find(q => q.id === p.twin);
     const input = [p, t].find(q => q && db.buildings.get(q.b)?.key === 'TransporterContainerInput') ?? p;
     if (!input) return;
@@ -883,6 +901,32 @@ const placeOps = {
     const p = state.props.find(q => q.id === id);
     if (!p) return;
     Object.assign(p, { x, y });
+    commit();
+  },
+  /** Drone base `id` also delivers to container `target` (any island); remove = take it off the list. */
+  setDroneTarget(id, target, on) {
+    const p = state.placed.find(q => q.id === id);
+    if (!p || p.b !== db.droneBaseId) return;
+    const list = (p.targets ?? []).filter(t => t !== target);
+    p.targets = on ? [...list, target] : list;
+    commit();
+  },
+  /** A magnetoid from building `from` to `to`: needs touching free slots and a Magnetoid Antenna on the island. */
+  addMagnet(from, to) {
+    const a = state.placed.find(q => q.id === from);
+    const c = state.placed.find(q => q.id === to);
+    if (!a || !c || a === c || a.g !== c.g) return tk('UI_MAGNET_NO_PAIR');
+    if (!state.placed.some(q => q.g === a.g && q.b === db.magnetAntennaId)) return tk('UI_MAGNET_NO_ANTENNA');
+    if (state.magnets.some(m => (m.from === from && m.to === to) || (m.from === to && m.to === from))) return tk('UI_MAGNET_EXISTS');
+    const used = id => new Set(state.magnets.flatMap(m => [m.from === id ? m.fs : null, m.to === id ? m.ts : null]).filter(v => v != null));
+    const pair = magnetPair(db.buildings.get(a.b), a.x, a.y, used(from), db.buildings.get(c.b), c.x, c.y, used(to));
+    if (!pair) return tk('UI_MAGNET_NO_PAIR');
+    state.magnets.push({ id: newId('m'), from, to, fs: pair.from, ts: pair.to });
+    commit();
+    return null;
+  },
+  removeMagnet(id) {
+    state.magnets = state.magnets.filter(m => m.id !== id);
     commit();
   },
   unplacedCount,
@@ -1428,6 +1472,7 @@ $('btn-clear').addEventListener('click', () => {
   state.groups = {};
   state.placed = [];
   state.props = [];
+  state.magnets = [];
   state.saveInfo = null;
   state.layouts = {};
   selection = null;
@@ -1857,14 +1902,23 @@ $('factory-file').addEventListener('change', async ev => {
         p.twinUid = b.twin;
         if (b.item != null) p.item = b.item;
       }
+      if ((b.buildingId === db.droneBaseId || b.buildingId === db.itemAntennaId) && b.item != null) p.item = b.item;
+      if (b.buildingId === db.droneBaseId) p.targetUids = b.targets ?? [];
       byUid.set(b.uid, p);
       placed.push(p);
     }
     for (const p of placed) {
+      if (p.targetUids) { p.targets = p.targetUids.map(u => byUid.get(u)?.id).filter(Boolean); delete p.targetUids; }
       if (p.twinUid == null) continue;
       const t = byUid.get(p.twinUid);
       if (t) p.twin = t.id;
       delete p.twinUid;
+    }
+    for (const p of placed) byUid.set(p.uid, p); // production buildings too, for the magnetoids
+    const magnets = [];
+    for (const m of layout.magnets) {
+      const a = byUid.get(m.origin); const c = byUid.get(m.target);
+      if (a && c) magnets.push({ id: newId('m'), uid: m.uid, from: a.id, to: c.id, fs: m.originSlot, ts: m.targetSlot });
     }
     const props = [];
     for (const pr of layout.props) {
@@ -1880,8 +1934,9 @@ $('factory-file').addEventListener('change', async ev => {
     state.groups = groups;
     state.placed = placed;
     state.props = props;
+    state.magnets = magnets;
     state.saveInfo = hash ? {
-      file: file.name, name: profile.name, day: profile.day, hash,
+      file: file.name, name: profile.name, day: profile.day, hash, logistics: true,
       types: [...new Set(layout.buildings.map(b => b.buildingId))],
     } : null;
     state.layouts = {};
@@ -1925,14 +1980,15 @@ el.saveOut.addEventListener('click', () => {
     const root = readTree(stored.text);
     const sum = applyLayout(root, {
       placed: state.placed, props: state.props, nodes: state.nodes, groups: state.groups,
-      db: { buildings: db.buildings, footprintOf }, hexAt,
+      magnets: state.saveInfo.logistics ? state.magnets : undefined, // boards imported before magnetoids were read
+      db: { buildings: db.buildings, footprintOf, magnetAntennaId: db.magnetAntennaId }, hexAt,
     });
     const unplaced = state.nodes.reduce((k, n) => k + unplacedCount(n.id), 0);
     const skipped = sum.skipped.length;
-    const changes = sum.moved + sum.transferred + sum.added + sum.deleted + sum.recipes + sum.items + sum.props;
+    const changes = sum.moved + sum.transferred + sum.added + sum.deleted + sum.recipes + sum.items + sum.props + sum.drones + sum.magnets;
     if (!changes) { toast(tk('UI_SAVE_OUT_NOTHING')); return; }
     if (!confirm(tk('UI_SAVE_OUT_CONFIRM', stored.file, sum.added, sum.moved, sum.transferred, sum.deleted, sum.recipes,
-      sum.items, sum.props, unplaced, skipped))) return;
+      sum.items, sum.props, unplaced, skipped, sum.drones, sum.magnets))) return;
     const blob = new Blob([writeTree(root)], { type: 'application/octet-stream' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
@@ -1959,6 +2015,7 @@ async function init() {
     toWorld: screenToWorld, hoverItem: () => hoverItem,
     setView(box) { state.archView = fitBox(box, 2); applyView(); save(); },
     onArmChange: markArmed,
+    toast,
     ops: placeOps,
   });
   setState(loadState() ?? emptyState());

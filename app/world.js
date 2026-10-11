@@ -111,3 +111,31 @@ export function nearestSlot(x, y) {
 
 /** Slot index whose position matches (x, y) (a transporter arm loaded from a save), or -1. */
 export const slotAt = (x, y) => { const n = nearestSlot(x, y); return n.dist < 0.05 ? n.slot : -1; };
+
+// ---------- magnetoids ----------
+// A magnetoid links two buildings through one magnetoid slot of each (edge-cell centres, `magnetSlots`, indices as
+// in saves). BaseBuilding.GetClosestMatchingMagnetoidSlots pairs slots closer than 1.1 grid cells; the magnetoid
+// sits halfway between them (checked on saves).
+const MAGNET_REACH = 0.5 * 1.1;
+
+/** World position of slot i of building b standing at (x, y). */
+export const magnetSlotAt = (b, x, y, i) => { const s = b?.magnetSlots?.[i]; return s ? { x: x + s[0], y: y + s[1] } : null; };
+
+/**
+ * Closest free slot pair between building a at (ax, ay) and building c at (cx, cy) (same island coordinates):
+ * { from, to, horizontal } or null when they don't touch. `usedA` / `usedC`: slot indices already taken.
+ */
+export function magnetPair(a, ax, ay, usedA, c, cx, cy, usedC) {
+  let best = null;
+  (a?.magnetSlots ?? []).forEach(([sx, sy], i) => {
+    if (usedA.has(i)) return;
+    (c?.magnetSlots ?? []).forEach(([tx, ty], j) => {
+      if (usedC.has(j)) return;
+      const dx = cx + tx - (ax + sx);
+      const dy = cy + ty - (ay + sy);
+      const d = Math.hypot(dx, dy);
+      if (d <= MAGNET_REACH && (!best || d < best.d)) best = { from: i, to: j, horizontal: Math.abs(dx) >= Math.abs(dy), d };
+    });
+  });
+  return best;
+}

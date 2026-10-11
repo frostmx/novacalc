@@ -282,13 +282,16 @@ export function readFactory(save) {
 /**
  * Every island, every placed building and every prop (world positions), for the architect view.
  * Islands: { id, biome, x, y (centre), locked, premade, outOfMap }; buildings: { uid, buildingId, x, y, islandId,
- * twin?, item? }; props: { uid, propId, x, y, islandId } (rocks, bushes, trees, …; planted crops are left out —
+ * twin?, item?, targets? } (item: what a transporter / drone base / item antenna carries, targets: a drone base's
+ * target containers); magnets: { uid, origin, target, originSlot, targetSlot, islandId } (Magnetoid Antenna's
+ * AntennaMagnetoids: a magnetoid moves items from the origin building to the target through those slots); props: { uid, propId, x, y, islandId } (rocks, bushes, trees, …; planted crops are left out —
  * they belong to their farm plot). The Advanced Farm's inner plots are part of their farm and are left out too.
  */
 export function readLayout(save) {
   const islands = [];
   const buildings = [];
   const props = [];
+  const magnets = [];
   for (const layer of Object.values(save.World?.World ?? {})) {
     for (const area of layer) {
       islands.push({
@@ -304,9 +307,13 @@ export function readLayout(save) {
           uid: b.Id, buildingId: b.BuildingId, x: b.X ?? 0, y: b.Y ?? 0, islandId: area.Id,
           ...(b.TwinContainer?.Id != null ? { twin: b.TwinContainer.Id } : {}), // transporter arm's other end
           ...(b.RequiredResource >= 0 ? { item: b.RequiredResource } : {}), // what an input arm carries
+          ...(Array.isArray(b.TargetContainers) ? { targets: b.TargetContainers.filter(Number.isFinite) } : {}),
         });
+        for (const m of b.AntennaMagnetoids ?? []) {
+          magnets.push({ uid: m.Id, origin: m.Origin, target: m.Target, originSlot: m.OriginSlot, targetSlot: m.TargetSlot, islandId: area.Id });
+        }
       }
     }
   }
-  return { islands, buildings, props };
+  return { islands, buildings, props, magnets };
 }

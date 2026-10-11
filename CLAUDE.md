@@ -115,6 +115,14 @@ Container content = `BaseContainer.popup` → `BaseContainerPopup.inventory.GetI
   a record of (`saveInfo.types`, option (a): a new building is a copy of such a record). "Download save" =
   `applyLayout` on the stored save → confirm summary → download under the same file name (we never write to disk).
   Only islands of the save on their own hex, not premade/locked, are written; placed instances only (not "not placed").
+- Logistics (architect): drone bases (`DroneBase`) and item antennas (`TransporterAntenna`, "ITEM ANTENNA") keep
+  `item` like input arms; a drone base has `targets` (placed ids; `db.droneTarget` = DepositAreaContainer classes:
+  deposits, drone bases, item antennas, export rockets) drawn as dotted blue lines and counted as routes between
+  islands in `transportNetwork` with `DRONE_CAP` (unlimited, link title "drones carry it"). `state.magnets` =
+  magnetoids { from, to, fs, ts } between touching buildings of one island (needs a Magnetoid Antenna there; moving
+  a building drops its magnetoids; `world.js` `magnetPair` picks the closest free slot pair). Selecting a building
+  shows a logistics panel (item, drone targets, "⇢ Magnetoid") — under the calculator card for production buildings.
+  `saveInfo.logistics` marks boards that read magnetoids (older boards don't write them).
 - Board islands: "+ Island" makes an empty frame; dropping a card into a frame (smallest one wins) moves it to that
   island, anywhere else it stays on its island (the frame grows); Alt+drop outside every frame takes it off; × deletes an island (cards stay), double click renames.
 
@@ -155,7 +163,7 @@ python tools/extract_icons.py "<game dir>" data/raw data     # needs gamedata.js
 - `creatures` (barn recipes per species), `crops` (seed → plant → harvest), `constants.waterBall`,
   `constants.island` (radius, grid cell)
 - building `footprint {w, h, x, y}` (placementCollider box, centre relative to the position) and `placementOffset`;
-  `movable` = the game's `canBeMoved`
+  `movable` = the game's `canBeMoved`; `magnetSlots` = magnetoid slot positions (raw `_magnetoidSlots`, slot order)
 - `props` (isProp objects: rocks, bushes, trees, ores): `box` = bounds of their non-trigger colliders (physics capsule +
   sprite-sized click polygon, `_colliders` in raw dumps), `loot` item ids
   `biomeColors` (biome → ground / border colour)
@@ -241,6 +249,17 @@ To measure mechanics: copy a save, let the user play ~1–3 min without sleeping
 - An Advanced Farm record lists its inner plots in `FarmPlots: [Id…]` (slot order); a copied farm must list its new
   plots there — with the template's ids the game throws in `AdvancedFarmPlotBuilding.LoadDependentData` and the world
   freezes (WORLD003, first try).
+- Drone base (DroneBase, a DepositAreaContainer): `RequiredResource` = item, `TargetContainers: [ids]` (any island),
+  `MaxAllowedDepositedResources` / `MinItemsToStartADelivery` / `MaxItemsPerTrip` (option indices), `DroneData` = its
+  drone (own Id, X/Y, State, CarriedResources). A copied base needs a new drone Id, drone at home, empty cargo.
+- Item antenna (TransporterAntenna, id 1214): container with `RequiredResource`; delivers that item to the buildings
+  of its island.
+- Magnetoids: the island's Magnetoid Antenna (1253) holds `AntennaMagnetoids: [{Id, x, y (midpoint of the two
+  slots), z, Origin, Target (building ids), OriginSlot, TargetSlot, Horizontal, CurResource, Task,
+  CurrentAccelerationTime}]` and `CurrentMagnetoidId` (next id, counts up from int32 min, per antenna); each linked
+  building has the id in `Magnetoids[slot].Id` (free = string "null"). Slots = `magnetoidSlots` (edge-cell centres,
+  `gamedata` `magnetSlots`); `GetClosestMatchingMagnetoidSlots` pairs slots closer than cell × 1.1 (all 5 magnetoids
+  of the user's save match these rules). Bot tasks may name one in `AssignedMagnetoid`.
 - Fails: a minimal new record (Id/Name/BuildingId/X/Y/Side only) — `NullReferenceException` in
   `BaseContainer.Setup` (Player.log). New buildings need a complete record.
 - Props (`Area.Props[]`: rocks, bushes, trees, ores, planted crops with `HasOwnerFarmPlot`) are in world coords.

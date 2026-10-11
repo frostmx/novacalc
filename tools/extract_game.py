@@ -12,7 +12,8 @@ A building's footprint is its `placementCollider` (a BoxCollider2D on a child Ga
 the dumped object as `_placement` = {size, offset, position}: collider size/offset plus the collider object's
 position relative to the building (summed local positions up the Transform chain).
 Objects without one (props: rocks, bushes, trees, NPCs) get `_colliders` instead: every 2D collider of
-their GameObject and its children, as {kind, size, offset, position, trigger}.
+their GameObject and its children, as {kind, size, offset, position, trigger}. Buildings with magnetoid slots
+get `_magnetoidSlots` = slot positions relative to the building, in slot index order (saves refer to slot indices).
 """
 import collections
 import json
@@ -93,6 +94,7 @@ def main(root, out):
     colliders, transforms = {}, {}  # collider key -> fields; GameObject key -> (localPosition, localScale, parent go)
     tr_by_key = {}
     colliders_by_go = collections.defaultdict(list)
+    mono_go = {}  # MonoBehaviour key -> its GameObject key
     for obj in env.objects:
         if obj.type.name in COLLIDERS:
             try:
@@ -120,9 +122,14 @@ def main(root, out):
         if obj.type.name != "MonoBehaviour":
             continue
         try:
-            sc = obj.read(check_read=False).m_Script.read()
+            mb = obj.read(check_read=False)
+            sc = mb.m_Script.read()
         except Exception:
             continue
+        try:  # which GameObject each MonoBehaviour sits on (magnetoid slots are MonoBehaviours)
+            mono_go[f"{obj.assets_file.name}:{obj.path_id}"] = key_of(obj.assets_file, mb.m_GameObject.m_FileID, mb.m_GameObject.m_PathID)
+        except Exception:
+            pass
         if sc.m_AssemblyName.replace(".dll", "") != ASSEMBLY:
             continue
         full = (sc.m_Namespace + "." if sc.m_Namespace else "") + sc.m_ClassName
@@ -172,6 +179,21 @@ def main(root, out):
         return {"kind": kind, "size": size, "offset": off, "position": pos,
                 "trigger": bool(c.get("m_IsTrigger"))}
 
+    def offset_of(it, go):
+        """Position of GameObject `go` relative to the dumped object's root (summed local positions)."""
+        pos, t, root = [0.0, 0.0], transforms.get(go), it.get("m_GameObject")
+        if not t:
+            return None
+        for _ in range(16):
+            if t["m_GameObject"] == root:
+                return [round(pos[0], 6), round(pos[1], 6)]
+            sc = t["m_LocalScale"]
+            pos = [pos[0] * sc["x"] + t["m_LocalPosition"]["x"], pos[1] * sc["y"] + t["m_LocalPosition"]["y"]]
+            t = tr_by_key.get(t["m_Father"])
+            if not t:
+                return None
+        return None
+
     children = collections.defaultdict(list)  # transform key -> child transforms
     for t in tr_by_key.values():
         if t.get("m_Father"):
@@ -195,6 +217,8 @@ def main(root, out):
         for it in items:
             if it.get("m_GameObject"):
                 it["_goName"] = go_names.get(it["m_GameObject"])
+            if it.get("magnetoidSlots"):
+                it["_magnetoidSlots"] = [offset_of(it, mono_go.get(k)) for k in it["magnetoidSlots"]]
             if it.get("placementCollider"):
                 it["_placement"] = placement(it)
             elif "buildingId" in it:
