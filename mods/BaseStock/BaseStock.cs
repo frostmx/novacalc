@@ -20,7 +20,7 @@ using UnityEngine.UI;
 using Il2Cpp;
 using Il2CppTMPro;
 
-[assembly: MelonInfo(typeof(BaseStock.BaseStockMod), "BaseStock", "1.0.0", "frost")]
+[assembly: MelonInfo(typeof(BaseStock.BaseStockMod), "BaseStock", "1.1.0", "frost")]
 [assembly: MelonGame("BEHEMUTT", "Nova Lands")]
 
 namespace BaseStock
