@@ -3,7 +3,7 @@ import { loadData } from './data.js';
 import { compute, nodeSpeed, portStatus, outputAmount, outputBonus, isWatered, EPS, DRONE_CAP } from './calc.js';
 import { decodeSave, readProfile, readFactory, readLayout } from './save.js';
 import { hexAt, hexCenter, hexSlots, TRANSPORTER_SLOTS, slotPair, slotAt, footprintOf, magnetPair } from './world.js';
-import { createArch } from './arch.js';
+import { createArch, TRASH } from './arch.js';
 import { readTree, writeTree, applyLayout, editableBuilding } from './savewrite.js';
 
 const STORAGE_KEY = 'novacalc.board.v1';
@@ -264,7 +264,7 @@ function nodeHtml(n) {
       <span class="stepper">
         <button data-act="dec" tabindex="-1">−</button><input data-act="count" type="number" min="1" step="1" value="${n.count}"><button data-act="inc" tabindex="-1">+</button>
       </span>
-      <button class="icon" data-act="remove" title="${esc(tk('UI_REMOVE'))}">×</button>
+      <button class="icon del" data-act="remove" title="${esc(tk('UI_REMOVE'))}">${TRASH}</button>
     </div>
     <div class="node-body">
       <select class="recipe" data-act="recipe">${options}</select>
@@ -306,7 +306,7 @@ function goalHtml(n) {
   return `<div class="node goal${selectedCls(n)}" data-node="${n.id}" style="left:${n.x}px;top:${n.y}px">
     <div class="node-head">
       <span class="node-title">🎯 ${esc(goalTitle(n))}</span>
-      <button class="icon" data-act="remove" title="${esc(tk('UI_REMOVE'))}">×</button>
+      <button class="icon del" data-act="remove" title="${esc(tk('UI_REMOVE'))}">${TRASH}</button>
     </div>
     <div class="node-body">
       ${rows}
@@ -442,7 +442,7 @@ function renderFrames() {
     const energy = e && (e.used || e.made)
       ? ` <span class="frame-energy${e.used > e.made ? ' neg' : ''}" title="${esc(tk('UI_ENERGY_TITLE'))}">⚡ ${e.used} / ${e.made}</span>` : '';
     return `<div class="frame" style="left:${b.x0 - 30}px;top:${b.y0 - 56}px;width:${b.x1 - b.x0 + 60}px;height:${b.y1 - b.y0 + 86}px">
-      <div class="frame-title" data-group="${esc(g)}" title="${esc(tk('UI_ISLAND_RENAME_TITLE'))}">${esc(state.groups[g].title)}${energy}<button class="icon" data-act="del-island" title="${esc(tk('UI_ISLAND_DELETE'))}">×</button></div></div>`;
+      <div class="frame-title" data-group="${esc(g)}" title="${esc(tk('UI_ISLAND_RENAME_TITLE'))}">${esc(state.groups[g].title)}${energy}<button class="icon del" data-act="del-island" title="${esc(tk('UI_ISLAND_DELETE'))}">${TRASH}</button></div></div>`;
   }).join('');
 }
 
@@ -1254,6 +1254,8 @@ window.addEventListener('pointerup', ev => {
       return;
     }
   }
+  // architect: a click on empty ground (not a drag of the map) closes the selected building's card
+  if (d.kind === 'pan' && state.mode === 'arch' && Math.hypot(ev.clientX - d.sx, ev.clientY - d.sy) < 4) archView.clickEmpty();
   if (d.kind === 'pan' || d.moved) save();
   if (d.kind !== 'connect') return;
   el.temp.setAttribute('d', '');

@@ -9,6 +9,10 @@ export const U = 32; // screen px per world unit at zoom 1
 const SLOT_RINGS = 2;
 const DRAW_SCALE = 0.965; // hexagons tile exactly; draw them a bit smaller for the gaps the game's map shows
 const ARM_REACH = 2.5;    // how close to a shore slot the pointer must be to place a transporter arm
+const CARD_GAP = 56;      // px between the selected building and its card
+const CARD_OFFSET_KEY = 'novacalc.archCardOffset';
+// delete buttons (cards, islands): a red bin, so they don't read as "close"
+export const TRASH = '<svg class="trash" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 1.5h4M2.5 3.5h11M4 3.5l.7 10a1 1 0 0 0 1 .9h4.6a1 1 0 0 0 1-.9l.7-10M6.5 6.5v5M9.5 6.5v5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
 /**
  * ctx: { el: { root, hexes, labels, blds, links, card }, state(), calc(), db, tk, esc, iconHtml, EPS,
@@ -115,7 +119,7 @@ export function createArch(ctx) {
       hexes += `<polygon class="island${isl.locked ? ' locked' : ''}" data-group="${esc(g)}" points="${pts(c.x, c.y)}"
         style="fill:${col.ground};stroke:${col.border ?? col.ground}"><title>${esc(isl.title)} · ${esc(tip)}</title></polygon>`;
       // title along the top edge, energy along the bottom one
-      labels += `<div class="arch-title" style="left:${c.x * U}px;top:${-(c.y + RY * DRAW_SCALE) * U + 12}px">${isl.locked ? '🔒 ' : ''}${esc(isl.title)}<button class="icon" data-act="del-island" data-group="${esc(g)}" title="${esc(tk('UI_ISLAND_DELETE'))}">×</button></div>`;
+      labels += `<div class="arch-title" style="left:${c.x * U}px;top:${-(c.y + RY * DRAW_SCALE) * U + 12}px">${isl.locked ? '🔒 ' : ''}${esc(isl.title)}<button class="icon del" data-act="del-island" data-group="${esc(g)}" title="${esc(tk('UI_ISLAND_DELETE'))}">${TRASH}</button></div>`;
       const e = calc?.energyByGroup.get(g);
       if (e && (e.used || e.made)) {
         labels += `<div class="arch-energy${e.used > e.made ? ' neg' : ''}" style="left:${c.x * U}px;top:${-(c.y - RY * DRAW_SCALE) * U - 12}px"
@@ -216,7 +220,10 @@ export function createArch(ctx) {
           // suppliers green, consumers orange (like the summary highlight); red dashes: no transporter for it
           const ce = calc?.edges.find(x => x.e === e);
           const noRoute = ce?.transport && ce.transport.cap <= ctx.EPS ? ' noroute' : '';
-          svg += `<line class="link ${out ? 'out' : 'in'}${noRoute}" x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}"/>`;
+          // items flow supplier → selected → consumer: the dashes run that way, the arrow points at the receiver
+          const [p1, p2] = out ? [a, b] : [b, a];
+          const marker = noRoute ? 'arch-arrow-no' : out ? 'arch-arrow-out' : 'arch-arrow-in';
+          svg += `<line class="link ${out ? 'out' : 'in'}${noRoute}" x1="${p1.x}" y1="${p1.y}" x2="${p2.x}" y2="${p2.y}" marker-end="url(#${marker})"/>`;
           if (!near || d < near.d) near = { b, d };
         }
         if (near) {
@@ -225,8 +232,9 @@ export function createArch(ctx) {
         }
       }
     }
-    el.links.innerHTML = `<defs><marker id="arch-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
-      <path d="M0,0 L10,5 L0,10 z"/></marker></defs>${svg}`;
+    const marker = (id, cls) => `<marker id="${id}" class="${cls}" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z"/></marker>`;
+    el.links.innerHTML = `<defs>${marker('arch-arrow', 'm-bridge')}${marker('arch-arrow-in', 'm-in')}${marker('arch-arrow-out', 'm-out')}${marker('arch-arrow-no', 'm-no')}</defs>${svg}`;
     return icons;
   }
 
@@ -317,6 +325,10 @@ export function createArch(ctx) {
     placeCard();
   }
 
+  // where the user dragged the card to, relative to its default spot next to the building (kept across selections)
+  let cardOffset = { x: 0, y: 0 };
+  try { cardOffset = { ...cardOffset, ...JSON.parse(localStorage.getItem(CARD_OFFSET_KEY)) }; } catch { /* default */ }
+
   function placeCard() {
     if (el.card.hidden || !selected) return;
     const pbEl = el.blds.querySelector(`.pb[data-p="${CSS.escape(selected)}"]`);
@@ -325,11 +337,32 @@ export function createArch(ctx) {
     const vp = el.card.offsetParent.getBoundingClientRect();
     const w = el.card.offsetWidth;
     const h = el.card.offsetHeight;
-    let left = r.right - vp.left + 16;
-    if (left + w > vp.width - 8) left = r.left - vp.left - w - 16;
-    el.card.style.left = `${Math.max(8, left)}px`;
-    el.card.style.top = `${Math.min(Math.max(8, r.top - vp.top), Math.max(8, vp.height - h - 8))}px`;
+    let left = r.right - vp.left + CARD_GAP;
+    if (left + w > vp.width - 8) left = r.left - vp.left - w - CARD_GAP;
+    left += cardOffset.x;
+    const top = r.top - vp.top + cardOffset.y;
+    el.card.style.left = `${Math.min(Math.max(8, left), Math.max(8, vp.width - w - 8))}px`;
+    el.card.style.top = `${Math.min(Math.max(8, top), Math.max(8, vp.height - h - 8))}px`;
   }
+
+  // drag the card by its head (not by its buttons and fields)
+  el.card.addEventListener('pointerdown', ev => {
+    if (ev.button !== 0 || !ev.target.closest('.node-head') || ev.target.closest('button, input, select, textarea, a')) return;
+    ev.preventDefault();
+    const sx = ev.clientX;
+    const sy = ev.clientY;
+    const start = { ...cardOffset };
+    el.card.classList.add('dragging');
+    const move = e => { cardOffset = { x: start.x + e.clientX - sx, y: start.y + e.clientY - sy }; placeCard(); };
+    const up = () => {
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', up);
+      el.card.classList.remove('dragging');
+      try { localStorage.setItem(CARD_OFFSET_KEY, JSON.stringify(cardOffset)); } catch { /* not kept */ }
+    };
+    window.addEventListener('pointermove', move);
+    window.addEventListener('pointerup', up);
+  });
 
   /** Summary hover: buildings whose card makes (hl-out) or uses (hl-in) the item. */
   function applyHighlight(item) {
@@ -450,8 +483,16 @@ export function createArch(ctx) {
       drag = { prop, elem, dx: pt.x - (c.x + prop.x), dy: pt.y - (c.y + prop.y), sx: ev.clientX, sy: ev.clientY };
       return true;
     }
-    select(null);
-    return false;
+    return false; // empty ground: the board pans; a plain click (no drag) clears the selection (clickEmpty)
+  }
+
+  /** A click on empty ground that didn't drag the map: close the card, drop the selection. */
+  function clickEmpty() {
+    if (!selected && !selMagnet) return;
+    selMagnet = null;
+    selected = null;
+    picking = null;
+    render();
   }
 
   function pointerMove(ev) {
@@ -572,6 +613,6 @@ export function createArch(ctx) {
 
   return {
     render, applyHighlight, pointerDown, pointerMove, pointerUp, keyDown, arm, disarm, fit, fitItem, placeCard,
-    armed: () => armed, select,
+    armed: () => armed, select, clickEmpty,
   };
 }
