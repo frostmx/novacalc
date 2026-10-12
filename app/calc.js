@@ -139,8 +139,14 @@ function generatorNode(n, b, r, db, mods) {
   return { n, b, r, parts, speed: 1, cycle: burn, plots: 1, inputs, outputs: new Map(), gen: true, energyEach, energyMade: energyEach * n.count };
 }
 
+/** A building with no recipe picked yet: no ports, but it stands on its island and holds its energy. */
+export const NO_RECIPE = Object.freeze({ id: null, inputs: [], outputs: [], time: 0 });
+
 function productionNode(n, db, mods) {
   const b = db.buildings.get(n.b);
+  if (b && n.r == null) {
+    return { n, b, r: NO_RECIPE, parts: speedParts(n, b, db, mods), speed: 0, cycle: 0, plots: b.farm?.plots ?? 1, inputs: new Map(), outputs: new Map(), empty: true };
+  }
   const r = db.recipes.get(n.r);
   if (!b || !r) return null;
   if (r.gen) return generatorNode(n, b, r, db, mods);

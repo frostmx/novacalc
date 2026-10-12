@@ -75,6 +75,11 @@ Container content = `BaseContainer.popup` → `BaseContainerPopup.inventory.GetI
   (`gen:<buildingId>`, generators). Crop/generator "recipes" are synthetic, built in data.js.
 - Node kinds: production `{b, r, count, c?, creatures?, lub?}`, farm `{…, fert?, water?}`, goal
   `{kind:'goal', items, every, per, preset?}`; any node may carry `g` = island (frames, energy per island).
+  `r` null = a building with no recipe yet (`calc.js` `NO_RECIPE`: no ports, still holds energy; save: `RecipeId -1`,
+  what the game stores for a building with no recipe). The catalog offers only the custom goal (`preset` = old boards).
+- Catalog drag (`catalogWhat`): an entry = that recipe, a building's group header (`summary[data-empty]`) = the empty
+  building; dropped on the board at the pointer (inside a frame → that island), in the architect armed for the drag
+  (`archView.hoverAt` / `dropAt`). A click still adds (board: middle of the view) / arms (architect).
 - `compute()` builds ports per node (recipe I/O + lubricant/water/fertilizer/fuel), allocates flow over edges,
   totals per item, energy used/made overall and per island. `pruneEdges()` keeps only edges compute accepts.
 - Save import (`factoryNodes` → `linkAll` → `layoutIslands`): merge equal setups per island, link producers to

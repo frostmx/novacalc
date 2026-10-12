@@ -1,6 +1,6 @@
 import { loadLocale, tk, applyStaticTexts } from './i18n.js';
 import { loadData } from './data.js';
-import { compute, nodeSpeed, portStatus, outputAmount, outputBonus, isWatered, EPS, DRONE_CAP } from './calc.js';
+import { compute, nodeSpeed, portStatus, outputAmount, outputBonus, isWatered, EPS, DRONE_CAP, NO_RECIPE } from './calc.js';
 import { decodeSave, readProfile, readFactory, readLayout } from './save.js';
 import { hexAt, hexCenter, hexSlots, TRANSPORTER_SLOTS, slotPair, slotAt, footprintOf, magnetPair } from './world.js';
 import { createArch, TRASH } from './arch.js';
@@ -108,7 +108,7 @@ function setState(s) {
   if (state.saveInfo && storedSave()?.hash !== state.saveInfo.hash) state.saveInfo = null; // that save is gone
   if (!state.archView) { state.archView = { x: 40, y: 40, z: 0.3 }; archNeedsFit = true; }
   // drop nodes whose building/recipe no longer exist in the data
-  state.nodes = state.nodes.filter(n => isGoal(n) || (db.buildings.has(n.b) && db.recipes.has(n.r)));
+  state.nodes = state.nodes.filter(n => isGoal(n) || (db.buildings.has(n.b) && (n.r == null || db.recipes.has(n.r))));
   const ids = [...state.nodes, ...state.edges, ...state.placed, ...state.props, ...state.magnets, ...Object.keys(state.groups).map(id => ({ id }))]
     .map(x => parseInt(String(x.id).slice(1), 10)).filter(Number.isFinite);
   nextId = (ids.length ? Math.max(...ids) : 0) + 1;
@@ -227,6 +227,7 @@ function nodeHtml(n) {
     const isSel = e.r.id === n.r && (e.creature?.key ?? '') === (n.c ?? '');
     return `<option value="${esc(value)}"${isSel ? ' selected' : ''}>${esc(db.entryLabel(e))}</option>`;
   }).join('');
+  const noRecipe = `<option value=""${c.empty ? ' selected' : ''}>${esc(tk('UI_NO_RECIPE'))}</option>`;
   const energy = b.energy ? `<span title="${esc(tk('UI_ENERGY'))}">⚡ ${fmtNum(b.energy * n.count)}</span>` : '';
   const plots = c.plots > 1 ? `<span>${esc(tk('UI_PLOTS', c.plots * n.count))}</span>` : '';
   const island = state.boardView === 'chain' && n.g && state.groups[n.g] ? `<span class="island-tag">${esc(state.groups[n.g].title)}</span>` : '';
@@ -247,7 +248,7 @@ function nodeHtml(n) {
     }
   }
   let cycleTitle = '';
-  if (b.class === 'DrillerBuilding') {
+  if (b.class === 'DrillerBuilding' && !c.empty) {
     // what the driller can mine depends on the island (WorldBiome.drillerExtractableResources)
     const item = r.outputs[0]?.item;
     const biomes = item != null ? db.drillIslands(item) : [];
@@ -258,7 +259,7 @@ function nodeHtml(n) {
     // the cycle timer resets to 0, so at most one item per frame
     cycleTitle = tk('UI_DRILL_FRAME', `${fmtRate(3600 / Math.ceil(c.cycle * 60 - 1e-6))}${unitLabel()}`);
   }
-  return `<div class="node${selectedCls(n)}" data-node="${n.id}" style="left:${n.x}px;top:${n.y}px">
+  return `<div class="node${selectedCls(n)}${c.empty ? ' no-recipe' : ''}" data-node="${n.id}" style="left:${n.x}px;top:${n.y}px">
     <div class="node-head">
       ${iconHtml('buildings', b.id, 24)}<span class="node-title" title="${esc(db.buildingName(b))}">${esc(db.buildingName(b))}</span>
       <span class="stepper">
@@ -267,8 +268,9 @@ function nodeHtml(n) {
       <button class="icon del" data-act="remove" title="${esc(tk('UI_REMOVE'))}">${TRASH}</button>
     </div>
     <div class="node-body">
-      <select class="recipe" data-act="recipe">${options}</select>
-      <div class="meta">${c.gen ? `
+      <select class="recipe" data-act="recipe">${noRecipe}${options}</select>
+      <div class="meta">${c.empty ? `
+        <span>${esc(tk('UI_NO_RECIPE_HINT'))}</span>${energy}` : c.gen ? `
         ${b.fuel ? `<span title="${esc(c.parts.efficiency ? tk('UI_BONUS_EFFICIENCY', pct(c.parts.efficiency)) : '')}">${esc(tk('UI_FUEL_BURN', fmtTime(c.cycle)))}</span>` : ''}
         <span class="made" title="${esc(tk('UI_GEN_EACH', c.energyEach))}">⚡ +${fmtNum(c.energyMade)}</span>` : `
         <span${cycleTitle ? ` title="${esc(cycleTitle)}"` : ''}>${esc(tk('UI_CYCLE', fmtTime(c.cycle)))}</span>
@@ -501,19 +503,14 @@ function renderBoardCatalog() {
     || (e.r.crop && db.plantName(e.r.crop).toLowerCase().includes(q))
     || hasItem([...e.r.inputs, ...e.r.outputs]);
 
-  const goals = db.goalPresets.filter(p => !q || db.goalLabel(p).toLowerCase().includes(q) || hasItem(p.items));
-  const custom = !q || tk('UI_GOAL_CUSTOM').toLowerCase().includes(q);
-  let html = '';
-  if (goals.length || custom) {
-    html += `<details data-key="goals"${openAttr('goals')}><summary><span>${esc(tk('UI_GOALS'))}</span><span class="count">${goals.length + (custom ? 1 : 0)}</span></summary>
-      ${custom ? `<button class="entry" data-goal=""><span class="out">🎯 ${esc(tk('UI_GOAL_CUSTOM'))}</span><span class="in">${esc(tk('UI_GOAL_CUSTOM_HINT'))}</span></button>` : ''}
-      ${goals.map(p => `<button class="entry" data-goal="${p.id}"><span class="out">🎯 ${esc(db.goalLabel(p))}</span><span class="in">${esc(db.stackText(p.items))}</span></button>`).join('')}
-    </details>`;
-  }
+  // goals: only a custom one (the game's delivery points are one-off batches)
+  let html = !q || tk('UI_GOAL_CUSTOM').toLowerCase().includes(q)
+    ? `<button class="entry goal-entry" data-goal=""><span class="out">🎯 ${esc(tk('UI_GOAL_CUSTOM'))}</span><span class="in">${esc(tk('UI_GOAL_CUSTOM_HINT'))}</span></button>`
+    : '';
   for (const b of db.productionBuildings) {
     const list = (db.entriesByBuilding.get(b.id) ?? []).filter(matches);
     if (!list.length) continue;
-    html += `<details data-key="b${b.id}"${openAttr(`b${b.id}`)}><summary><span>${iconHtml('buildings', b.id, 22)}${esc(db.buildingName(b))}</span><span class="count">${list.length}</span></summary>
+    html += `<details data-key="b${b.id}"${openAttr(`b${b.id}`)}><summary data-empty="${b.id}" title="${esc(tk('UI_DRAG_EMPTY'))}"><span>${iconHtml('buildings', b.id, 22)}${esc(db.buildingName(b))}</span><span class="count">${list.length}</span></summary>
       ${list.map(e => entryButton(e, false)).join('')}</details>`;
   }
   el.catalog.innerHTML = html || `<p class="empty">${esc(tk('UI_NOTHING_FOUND'))}</p>`;
@@ -544,7 +541,7 @@ function renderArchCatalog() {
   for (const b of db.productionBuildings) {
     const list = (db.entriesByBuilding.get(b.id) ?? []).filter(e => has(`${db.buildingName(e.b)} ${db.entryLabel(e)} ${db.stackText(e.r.inputs)}`));
     if (!list.length) continue;
-    html += `<details data-key="b${b.id}"${openAttr(`b${b.id}`)}><summary><span>${iconHtml('buildings', b.id, 22)}${esc(db.buildingName(b))}</span><span class="count">${list.length}</span></summary>
+    html += `<details data-key="b${b.id}"${openAttr(`b${b.id}`)}><summary data-empty="${b.id}" title="${esc(tk(placeable(b.id) ? 'UI_DRAG_EMPTY' : 'UI_SAVE_NO_TEMPLATE'))}"><span>${iconHtml('buildings', b.id, 22)}${esc(db.buildingName(b))}</span><span class="count">${list.length}</span></summary>
       ${list.map(e => entryButton(e, false, noTemplate(b.id))).join('')}</details>`;
   }
   const infra = db.infraBuildings.filter(b => has(db.buildingName(b)));
@@ -581,7 +578,7 @@ const entryFromButton = btn => db.findEntry(+btn.dataset.b, parseRecipeId(btn.da
 
 function addNode(entry, x, y, count = 1) {
   const node = {
-    id: newId('n'), b: entry.b.id, r: entry.r.id, count, x: Math.round(x), y: Math.round(y),
+    id: newId('n'), b: entry.b.id, r: entry.r.id ?? null, count, x: Math.round(x), y: Math.round(y),
     ...(entry.creature ? { c: entry.creature.key } : {}),
     ...(entry.b.maxCreatures ? { creatures: 1 } : {}),
   };
@@ -824,9 +821,9 @@ const placeOps = {
       state.placed.push({ ...at, node: card.id });
     } else if (armed.entry) {
       const e = armed.entry;
-      const like = { b: e.b.id, r: e.r.id, c: e.creature?.key, creatures: e.b.maxCreatures ? 1 : undefined };
+      const like = { b: e.b.id, r: e.r.id ?? null, c: e.creature?.key, creatures: e.b.maxCreatures ? 1 : undefined };
       // a matching card on this island with a building still to place takes it; otherwise the card grows by one
-      let n = state.nodes.find(x => !isGoal(x) && x.g === g && x.b === like.b && x.r === like.r
+      let n = state.nodes.find(x => !isGoal(x) && x.g === g && x.b === like.b && (x.r ?? null) === like.r
         && (x.c ?? null) === (like.c ?? null) && unplacedCount(x.id) > 0);
       if (!n) { n = cardOn(g, like); n.count += 1; }
       state.placed.push({ ...at, node: n.id });
@@ -1344,7 +1341,7 @@ function onCardChange(ev) {
     case 'count': n.count = Math.max(1, Math.round(+t.value) || 1); break;
     case 'recipe': {
       const [r, c] = t.value.split('|');
-      n.r = parseRecipeId(r);
+      n.r = r === '' ? null : parseRecipeId(r);
       if (c) n.c = c; else delete n.c;
       break;
     }
@@ -1398,39 +1395,104 @@ el.summary.addEventListener('mouseleave', () => {
   setHoverItem(null);
 });
 
-el.catalog.addEventListener('click', ev => {
-  const btn = ev.target.closest('.entry');
-  if (!btn) return;
-  if (state.mode === 'arch') {
-    const armed = archView.armed();
-    let what = null;
-    if (btn.dataset.node) {
-      const n = findNode(btn.dataset.node);
-      if (n) what = { b: db.buildings.get(n.b), node: n.id };
-    } else if (btn.dataset.infra) {
-      what = { b: db.buildings.get(+btn.dataset.infra) };
-    } else if (btn.dataset.b) {
-      const entry = entryFromButton(btn);
-      if (entry) what = { b: entry.b, entry };
-    }
-    if (what && armed && btn.classList.contains('armed')) archView.disarm();
-    else if (what) archView.arm(what);
-    return;
+/**
+ * What a catalog element adds: an entry (that recipe), a building's group header (`data-empty`: the building with no
+ * recipe yet), a card's unplaced buildings or infrastructure (architect), the custom goal (board).
+ * Architect: { b, entry? | node? }; board: { entry } or { goal: true }.
+ */
+function catalogWhat(src) {
+  if (src.dataset.empty) {
+    const b = db.buildings.get(+src.dataset.empty);
+    return b ? { b, entry: { b, r: NO_RECIPE } } : null;
   }
-  const c = viewCenterWorld();
+  if (src.dataset.goal != null) return { goal: true };
+  if (src.dataset.node) {
+    const n = findNode(src.dataset.node);
+    return n ? { b: db.buildings.get(n.b), node: n.id } : null;
+  }
+  if (src.dataset.infra) return { b: db.buildings.get(+src.dataset.infra) };
+  const entry = src.dataset.b ? entryFromButton(src) : null;
+  return entry ? { b: entry.b, entry } : null;
+}
+
+/** Board: add a card for `what` with its top centre at world point w (null = the middle of the view). */
+function addFromCatalog(what, w) {
+  const c = w ?? viewCenterWorld();
   const x = c.x - NODE_W / 2;
   let node;
-  if (btn.dataset.goal != null) {
-    const preset = btn.dataset.goal ? db.goalPresets.find(p => String(p.id) === btn.dataset.goal) : null;
-    node = addGoal(preset, x, freeY(x, c.y, 260));
-  } else {
-    const entry = entryFromButton(btn);
-    node = addNode(entry, x, freeY(x, c.y, estimateHeight(entry)));
-  }
+  if (what.goal) node = addGoal(null, x, w ? c.y - 20 : freeY(x, c.y, 260));
+  else node = addNode(what.entry, x, w ? c.y - 20 : freeY(x, c.y, estimateHeight(what.entry)));
   const g = state.boardView === 'chain' ? undefined : islandAtBoard(c.x, c.y); // added inside an island's frame
   if (g) node.g = g;
   selection = { kind: 'node', id: node.id };
   commit();
+}
+
+el.catalog.addEventListener('click', ev => {
+  const btn = ev.target.closest('.entry');
+  if (!btn) return;
+  const what = catalogWhat(btn);
+  if (!what) return;
+  if (state.mode === 'arch') {
+    if (archView.armed() && btn.classList.contains('armed')) archView.disarm();
+    else archView.arm(what);
+    return;
+  }
+  addFromCatalog(what, null);
+});
+
+// Drag from the catalog onto the board or the map: an entry brings its recipe, a building's header the empty building.
+let catDrag = null; // { src, sx, sy, what?, ghost? }
+let catDropAt = -1e9;
+// the click that follows a drop must not add another one (nor toggle the group)
+window.addEventListener('click', ev => {
+  if (performance.now() - catDropAt < 300) { ev.stopPropagation(); ev.preventDefault(); }
+}, true);
+el.catalog.addEventListener('pointerdown', ev => {
+  if (ev.button !== 0) return;
+  const src = ev.target.closest('.entry, summary[data-empty]');
+  if (src && !src.disabled) catDrag = { src, sx: ev.clientX, sy: ev.clientY };
+});
+const overViewport = (x, y) => el.viewport.contains(document.elementFromPoint(x, y));
+function endCatDrag() {
+  catDrag?.ghost?.remove();
+  document.body.classList.remove('cat-dragging');
+  catDrag = null;
+}
+window.addEventListener('pointermove', ev => {
+  const d = catDrag;
+  if (!d) return;
+  if (!d.what) {
+    if (Math.hypot(ev.clientX - d.sx, ev.clientY - d.sy) < 6) return;
+    d.what = catalogWhat(d.src);
+    if (!d.what || (state.mode === 'arch' && d.what.goal)) { catDrag = null; return; }
+    if (state.mode === 'arch' && !placeable(d.what.b.id)) { toast(tk('UI_SAVE_NO_TEMPLATE'), true); catDrag = null; return; }
+    d.ghost = document.createElement('div');
+    d.ghost.className = 'cat-ghost';
+    d.ghost.innerHTML = (d.src.querySelector('.out') ?? d.src.querySelector('span'))?.innerHTML ?? '';
+    document.body.append(d.ghost);
+    document.body.classList.add('cat-dragging');
+    if (state.mode === 'arch') archView.arm(d.what);
+  }
+  d.ghost.style.transform = `translate(${ev.clientX + 14}px, ${ev.clientY + 14}px)`;
+  if (state.mode === 'arch') archView.hoverAt(ev.clientX, ev.clientY);
+});
+window.addEventListener('pointerup', ev => {
+  const d = catDrag;
+  if (!d) return;
+  endCatDrag();
+  if (!d.what) return; // a plain click: the click handler does it
+  catDropAt = performance.now();
+  const inside = overViewport(ev.clientX, ev.clientY);
+  if (state.mode === 'arch') {
+    if (!inside) archView.disarm();
+    else if (!archView.dropAt(ev.clientX, ev.clientY)) toast(tk('UI_ARCH_DROP_MISS'), true);
+    return;
+  }
+  if (inside) addFromCatalog(d.what, screenToWorld(ev.clientX, ev.clientY));
+});
+window.addEventListener('keydown', ev => {
+  if (ev.key === 'Escape' && catDrag?.what) { if (state.mode === 'arch') archView.disarm(); endCatDrag(); }
 });
 
 el.unit.addEventListener('change', () => { state.unit = el.unit.value; commit(); });

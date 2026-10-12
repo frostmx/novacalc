@@ -399,3 +399,19 @@ button.primary:hover { background: color-mix(in srgb, var(--accent) 85%, #000); 
 #board-tools { display: flex; align-items: center; gap: 8px; }
 #board-tools .seg { margin-left: 4px; }
 .island-tag { color: var(--accent); }
+
+/* dragging from the catalog onto the board / map */
+#catalog .entry, #catalog summary { user-select: none; }
+#catalog summary[data-empty] { cursor: grab; }
+body.cat-dragging, body.cat-dragging * { cursor: grabbing !important; }
+.cat-ghost {
+  position: fixed; left: 0; top: 0; z-index: 50; pointer-events: none; display: flex; align-items: center; gap: 6px;
+  padding: 4px 8px; border-radius: 6px; background: var(--panel); border: 1px solid var(--accent); box-shadow: 0 4px 14px rgb(0 0 0 / 0.4);
+  font-size: 12px; white-space: nowrap;
+}
+.cat-ghost img, .cat-ghost .icon { flex: none; }
+#catalog > .goal-entry { margin: 6px 0 8px; }
+/* a building with no recipe yet */
+.node.no-recipe .node-body .recipe { border-style: dashed; }
+.node.no-recipe .meta { opacity: 0.75; font-style: italic; }
+.pb.prod.no-recipe { opacity: 0.7; border-style: dashed; }

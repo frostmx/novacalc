@@ -13,8 +13,9 @@ Everything runs in your browser. A save file you import is read locally and neve
   for you, and shortages and surpluses are highlighted on every port.
 - Uses the game's real numbers: building speed, skills, Gem Overclocker gems, lubricants, fertilizers, farm
   watering, Animal Barn creatures, generator fuel and energy per island, drills and their drill bits.
-- Goals: pick a delivery target (Black Hole Pyramid, Nova Gateway, …) or your own list. "Build chain" adds the
-  buildings needed down to raw resources.
+- Drag a recipe from the list onto the board (or click it). Drag a building's name to add it with no recipe yet
+  and pick one later.
+- Goals: your own list of items and how often. "Build chain" adds the buildings needed down to raw resources.
 - Summary of everything made and used. Hover an item to highlight its producers and consumers; click it to zoom
   to them.
 - Two views: cards grouped by island, or the whole chain at once, each with automatic layout.

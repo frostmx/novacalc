@@ -156,8 +156,8 @@ export function createArch(ctx) {
       const w = (r.x1 - r.x0) * U;
       const h = (r.y1 - r.y0) * U;
       const cn = p.node != null ? calc?.nodes.get(p.node) : null;
-      const status = p.node == null ? 'infra' : cn && cn.coverage < 1 - ctx.EPS ? 'prod short' : 'prod';
-      const recipe = cn ? db.entryLabel({ b, r: cn.r, creature: cn.n.c ? db.creatures.get(cn.n.c) : null }) : '';
+      const status = p.node == null ? 'infra' : cn?.empty ? 'prod no-recipe' : cn && cn.coverage < 1 - ctx.EPS ? 'prod short' : 'prod';
+      const recipe = !cn ? '' : cn.empty ? tk('UI_NO_RECIPE') : db.entryLabel({ b, r: cn.r, creature: cn.n.c ? db.creatures.get(cn.n.c) : null });
       const carried = carries(b) ? armItem(p) : null; // arms, drone bases, item antennas show what they carry
       const what = recipe || (carried != null ? db.itemName(carried) : '');
       const label = b ? `${db.buildingName(b)}${what ? `\n${what}` : ''}` : `#${p.b}`;
@@ -413,6 +413,21 @@ export function createArch(ctx) {
     ctx.onArmChange?.(null);
   }
 
+  /** A building dragged in from the catalog (armed for the drag): show where it would go. */
+  function hoverAt(x, y) {
+    if (armed) showGhost(armed.b, armedSpot(toUnits(x, y)));
+  }
+  /** …and dropped at client point (x, y): place it there if it fits, then disarm. Returns whether it was placed. */
+  function dropAt(x, y) {
+    if (!armed) return false;
+    const spot = armedSpot(toUnits(x, y));
+    const isNewArm = isArm(armed.b);
+    const id = spot?.ok ? (isNewArm ? ctx.ops.placeTransporter(spot.g, spot.slot) : ctx.ops.place(armed, spot.g, spot.x, spot.y)) : null;
+    disarm();
+    if (isNewArm && id) select(id);
+    return !!spot?.ok;
+  }
+
   // ---------- pointer ----------
 
   /** Returns true when the architect handled the event (otherwise the board pans). */
@@ -612,7 +627,7 @@ export function createArch(ctx) {
   }
 
   return {
-    render, applyHighlight, pointerDown, pointerMove, pointerUp, keyDown, arm, disarm, fit, fitItem, placeCard,
+    render, applyHighlight, pointerDown, pointerMove, pointerUp, keyDown, arm, disarm, hoverAt, dropAt, fit, fitItem, placeCard,
     armed: () => armed, select, clickEmpty,
   };
 }

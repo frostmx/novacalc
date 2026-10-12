@@ -339,8 +339,9 @@ export function applyLayout(root, plan) {
     const rec = recByUid.get(uidOf.get(p.id));
     if (!rec) continue;
     const n = p.node != null ? nodes.get(p.node) : null;
-    if (n && typeof n.r === 'number' && child(rec, 'RecipeId') && value(rec, 'RecipeId') !== n.r) {
-      set(rec, 'RecipeId', n.r);
+    const recipe = n && n.r == null ? -1 : n?.r; // a card with no recipe: RecipeId -1
+    if (n && typeof recipe === 'number' && child(rec, 'RecipeId') && value(rec, 'RecipeId') !== recipe) {
+      set(rec, 'RecipeId', recipe);
       if (!isNew.has(p.id)) sum.recipes++;
     }
     const t = p.twin != null ? placedById.get(p.twin) : null;
